@@ -3,6 +3,7 @@ using Core.Entities;
 using Core.Interfaces.BusinessLogic.Services;
 using Core.Interfaces.DataAccess.Repositories;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Shared.Dto;
 using Shared.Dto.Requests;
 using Shared.Dto.Responses;
@@ -12,14 +13,23 @@ using Sodium;
 
 namespace BusinessLogic.Services;
 
-public class UserService(IUserRepository userRepository, IJwtService jwtService, IMapper mapper, IMemoryCache cache) : IUserService
+public class UserService(
+    IUserRepository userRepository,
+    IJwtService jwtService,
+    IMapper mapper,
+    IMemoryCache cache,
+    ILogger<UserService> logger) : IUserService
 {
     public async Task<ServiceResult<UserDto>> AddAsync(UserDto userDto)
     {
         if (await userRepository.UsernameExists(userDto.Username))
+        {
+            logger.LogInformation("Adding new user {username} failed: username already exists", userDto.Username);
             return ServiceResult<UserDto>.Failure("Username already exists", ServiceResponseErrorType.Conflict);
+        }
 
         await userRepository.AddAsync(mapper.Map<UserEntity>(userDto));
+        logger.LogInformation("Adding new user {username} succeeded", userDto.Username);
         return ServiceResult<UserDto>.Success(userDto, ServiceResponseSuccessType.Created);
     }
 
@@ -27,7 +37,11 @@ public class UserService(IUserRepository userRepository, IJwtService jwtService,
     {
         var signatureSalt = await userRepository.GetSignatureSaltByUsername(username);
         if (signatureSalt is null)
+        {
+            logger.LogInformation("Retrieving signature salt for user {username} failed: user doesn't exist", username);
             return ServiceResult<ChallengeResponse>.Failure("User not found", ServiceResponseErrorType.NotFound);
+        }
+        logger.LogInformation("Retrieved signature salt for user {username}", username);
 
         var nonce = Convert.ToBase64String(Sodium.SodiumCore.GetRandomBytes(32));
         var challengeResponse = new ChallengeResponse()
@@ -37,39 +51,76 @@ public class UserService(IUserRepository userRepository, IJwtService jwtService,
         };
 
         cache.Set($"nonce:{username}", nonce, TimeSpan.FromMinutes(2));
-
+        
+        logger.LogInformation("Generated challenge for user {username}", username);
         return ServiceResult<ChallengeResponse>.SuccessOk(challengeResponse);
     }
 
     public async Task<ServiceResult<LoginResponse>> Login(LoginRequest loginRequest)
     {
-        if (!cache.TryGetValue($"nonce:{loginRequest.Username}", out string? nonce) || string.IsNullOrEmpty(nonce) ||
-            nonce != loginRequest.Nonce)
-            return ServiceResult<LoginResponse>.Failure("Challenge expired or invalid",
-                ServiceResponseErrorType.Unauthorized);
+        if (!cache.TryGetValue($"nonce:{loginRequest.Username}", out string? nonce))
+        {
+            logger.LogWarning("Nonce not found for user {username}", loginRequest.Username);
+            return ServiceResult<LoginResponse>.Failure("Challenge expired or invalid", ServiceResponseErrorType.Unauthorized);
+        }
 
+        if (string.IsNullOrEmpty(nonce))
+        {
+            logger.LogError("Nonce found but null or empty for user {username}", loginRequest.Username);
+            return ServiceResult<LoginResponse>.Failure("Challenge corrupted", ServiceResponseErrorType.InternalServerError);
+        }
+
+        if (nonce != loginRequest.Nonce)
+        {
+            logger.LogWarning("Nonce found for user {username} but request nonce is different", loginRequest.Username);
+            return ServiceResult<LoginResponse>.Failure("Challenge invalid", ServiceResponseErrorType.Unauthorized);
+        }
+        
         cache.Remove($"nonce:{loginRequest.Username}");
+        logger.LogInformation("Valid nonce found for user {username}. Nonce removed from cache", loginRequest.Username);
 
         var publicKey = await userRepository.GetPublicKeyByUsername(loginRequest.Username);
         if (publicKey is null)
+        {
+            logger.LogError("Public ket not found for user {username}, but valid nonce was found. Potential data inconsistency.", loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("User not found", ServiceResponseErrorType.NotFound);
+        }
 
-        if (!PublicKeyAuth.VerifyDetached(Convert.FromBase64String(loginRequest.NonceSignature),
-                Convert.FromBase64String(nonce), Convert.FromBase64String(publicKey)))
-            return ServiceResult<LoginResponse>.Failure("Challenge failed: invalid signature",
-                ServiceResponseErrorType.Unauthorized);
+        try
+        {
+            var signatureBytes = Convert.FromBase64String(loginRequest.NonceSignature);
+            var nonceBytes = Convert.FromBase64String(loginRequest.Nonce);
+            var publicKeyBytes = Convert.FromBase64String(publicKey);
+            if (!PublicKeyAuth.VerifyDetached(signatureBytes,
+                    nonceBytes, publicKeyBytes))
+            {
+                logger.LogInformation("Challenge failed by user {username}, invalid signature", loginRequest.Username);
+                return ServiceResult<LoginResponse>.Failure("Challenge failed: invalid signature",
+                    ServiceResponseErrorType.Unauthorized);
+            }
+        }
+        catch (FormatException ex)
+        {
+            logger.LogWarning(ex, "Invalid Base64 format in login request for user {username}", loginRequest.Username);
+            return ServiceResult<LoginResponse>.Failure("Invalid input format", ServiceResponseErrorType.BadRequest);
+        }
 
+        logger.LogInformation("Challenge completed by user {username}", loginRequest.Username);
+        
         var encryptionSalt = await userRepository.GetEncryptionSaltByUsername(loginRequest.Username);
         if (encryptionSalt is null)
+        {
+            logger.LogError("Challenge completed by user {username}, but encryption salt not found. Potential data inconsistency.", loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge completed. User encryption salt not found",
                 ServiceResponseErrorType.InternalServerError);
+        }
 
         var loginResponse = new LoginResponse()
         {
             Token = jwtService.GenerateToken(loginRequest.Username),
             EncryptionSalt = encryptionSalt,
         };
-        
+        logger.LogInformation("Login completed by user {username}. Generated JWT and retrieved encryption salt", loginRequest.Username);
         return ServiceResult<LoginResponse>.SuccessOk(loginResponse);
     }
 }

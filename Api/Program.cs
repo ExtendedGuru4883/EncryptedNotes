@@ -7,6 +7,7 @@ using Core.Interfaces.DataAccess.Repositories;
 using DataAccess;
 using DataAccess.Repositories;
 using EncryptedNotes.Mapping;
+using EncryptedNotes.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -65,6 +66,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseMiddleware<RequestResponseLoggingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

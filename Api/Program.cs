@@ -1,3 +1,4 @@
+using System.Text;
 using BusinessLogic.Configurations;
 using BusinessLogic.Mapping;
 using BusinessLogic.Services;
@@ -6,7 +7,9 @@ using Core.Interfaces.DataAccess.Repositories;
 using DataAccess;
 using DataAccess.Repositories;
 using EncryptedNotes.Mapping;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,18 +35,38 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 //JWT
+var jwtSettingsConfigurationSection = builder.Configuration.GetSection("JwtSettings");
 builder.Services
     .AddOptions<JwtSettings>()
-    .Bind(builder.Configuration.GetSection("JwtSettings"))
+    .Bind(jwtSettingsConfigurationSection)
     .ValidateDataAnnotations()
     .ValidateOnStart();
 builder.Services.AddSingleton<IJwtService, JwtService>();
 
+var jwtSettings = jwtSettingsConfigurationSection.Get<JwtSettings>();
+ArgumentNullException.ThrowIfNull(jwtSettings);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(jwtOptions =>
+    {
+        jwtOptions.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.PrivateKey)),
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+        };
+    });
+
+//Build
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

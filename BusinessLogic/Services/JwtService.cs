@@ -12,8 +12,9 @@ public class JwtService(IOptions<JwtSettings> jwtSettings) : IJwtService
 {
     private readonly SymmetricSecurityKey _key =
         new(Encoding.UTF8.GetBytes(jwtSettings.Value.PrivateKey));
-
     private readonly int _lifetimeInMinutes = jwtSettings.Value.LifetimeInMinutes;
+    private readonly string _audience = jwtSettings.Value.Audience;
+    private readonly string _issuer = jwtSettings.Value.Issuer;
 
     public string GenerateToken(string username)
     {
@@ -25,6 +26,8 @@ public class JwtService(IOptions<JwtSettings> jwtSettings) : IJwtService
         var descriptor = new SecurityTokenDescriptor
         {
             Claims = claims,
+            Issuer = _issuer,
+            Audience = _audience,
             NotBefore = DateTime.UtcNow,
             Expires = DateTime.UtcNow.AddMinutes(_lifetimeInMinutes),
             SigningCredentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256)

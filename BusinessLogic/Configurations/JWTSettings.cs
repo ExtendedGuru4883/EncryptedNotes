@@ -9,4 +9,8 @@ public class JwtSettings()
     public required string PrivateKey { get; set; }
     [Range(1, int.MaxValue)]
     public int LifetimeInMinutes { get; set; }
+    [Required]
+    public required string Issuer { get; set; }
+    [Required]
+    public required string Audience { get; set; }
 }

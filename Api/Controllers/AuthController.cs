@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using Core.Interfaces.BusinessLogic.Services;
 using EncryptedNotes.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
 using Shared.Dto.Requests;

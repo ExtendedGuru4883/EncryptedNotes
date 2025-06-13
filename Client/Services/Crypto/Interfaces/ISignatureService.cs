@@ -1,6 +1,6 @@
 using BlazorSodium.Sodium.Models;
 
-namespace Client.Services.Clients.Crypto.Interfaces;
+namespace Client.Services.Crypto.Interfaces;
 
 public interface ISignatureService
 {

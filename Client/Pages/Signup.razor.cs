@@ -1,14 +1,12 @@
 using System.Net.Http.Json;
-using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Components;
 using System.Text;
 using Client.Models;
-using Client.Services.Clients.Crypto.Interfaces;
+using Client.Services.Crypto.Interfaces;
 using Shared.Dto.Requests;
 
 namespace Client.Pages;
 
-[SupportedOSPlatform("browser")]
 public partial class Signup : ComponentBase
 {
     [Inject]

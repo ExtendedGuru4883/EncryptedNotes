@@ -1,9 +1,9 @@
 using System.Runtime.Versioning;
 using BlazorSodium.Sodium;
 using BlazorSodium.Sodium.Models;
-using Client.Services.Clients.Crypto.Interfaces;
+using Client.Services.Crypto.Interfaces;
 
-namespace Client.Services.Clients.Crypto;
+namespace Client.Services.Crypto;
 
 [SupportedOSPlatform("browser")]
 public class SignatureService : ISignatureService

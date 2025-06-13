@@ -1,15 +1,14 @@
 using System.Net.Http.Json;
-using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Components;
 using System.Text;
+using Blazored.LocalStorage;
 using Client.Models;
-using Client.Services.Clients.Crypto.Interfaces;
+using Client.Services.Crypto.Interfaces;
 using Shared.Dto.Requests;
 using Shared.Dto.Responses;
 
 namespace Client.Pages;
 
-[SupportedOSPlatform("browser")]
 public partial class Login : ComponentBase
 {
     [Inject]
@@ -18,6 +17,8 @@ public partial class Login : ComponentBase
     public required ICryptoService CryptoService { get; set; }
     [Inject]
     public required ISignatureService SignatureService { get; set; }
+    [Inject]
+    public required ILocalStorageService LocalStorageService { get; set; }
     
     private readonly LoginFormModel _model = new();
     private List<string> _errors = [];
@@ -49,7 +50,9 @@ public partial class Login : ComponentBase
 
         response = await HttpClient.PostAsync("auth/login", JsonContent.Create(loginRequest));
         var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
-        Console.WriteLine(loginResponse.Token);
-        Console.WriteLine(loginResponse.EncryptionSaltBase64);
+
+        if (!response.IsSuccessStatusCode) return;
+        
+        await LocalStorageService.SetItemAsStringAsync("token", loginResponse.Token);
     }
 }

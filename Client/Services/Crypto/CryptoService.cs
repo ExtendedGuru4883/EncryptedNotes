@@ -1,8 +1,8 @@
 using System.Runtime.Versioning;
-using Client.Services.Clients.Crypto.Interfaces;
 using BlazorSodium.Sodium;
+using Client.Services.Crypto.Interfaces;
 
-namespace Client.Services.Clients.Crypto;
+namespace Client.Services.Crypto;
 
 [SupportedOSPlatform("browser")]
 public class CryptoService : ICryptoService

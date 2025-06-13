@@ -53,6 +53,8 @@ public partial class Login : ComponentBase
                 {
                     await LocalStorageService.SetItemAsStringAsync("token",
                         apiLoginResponse.Data.Token);
+
+                    NavigationManager.NavigateTo("/");
                     return;
                 }
 
@@ -63,7 +65,6 @@ public partial class Login : ComponentBase
 
             //!apiChallengeResponse.IsSuccess
             _errors.Add(apiChallengeResponse.ErrorMessage ?? "Unexpected error retrieving challenge");
-            NavigationManager.NavigateTo("/");
         }
         finally
         {

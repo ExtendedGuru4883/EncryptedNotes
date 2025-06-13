@@ -17,5 +17,5 @@
     <InputText @bind-Value="_model.Password" placeholder="Password"/>
     <ValidationMessage For="@(() => _model.Password)"/>
 
-    <button type="submit" disabled="@_isLoading">(@_isLoading ? "Loading..." : "Signup")</button>
+    <button type="submit" disabled="@_isLoading">@(_isLoading ? "Loading..." : "Signup")</button>
 </EditForm>

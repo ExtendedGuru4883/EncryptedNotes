@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using Core.Interfaces.BusinessLogic.Services;
 using EncryptedNotes.Helpers;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
 using Shared.Dto.Requests;
@@ -12,7 +11,7 @@ namespace EncryptedNotes.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class AuthController(IUserService userService, IMapper mapper) : ControllerBase
+public class AuthController(IUserService userService, IAuthService authService, IMapper mapper) : ControllerBase
 {
     [HttpPost]
     [Route(nameof(Signup))]
@@ -32,7 +31,7 @@ public class AuthController(IUserService userService, IMapper mapper) : Controll
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ChallengeResponse>> GetChallenge([FromQuery][Required] string username)
     {
-        return ServiceResponseMapper.ToActionResult(await userService.GenerateChallenge(username));
+        return ServiceResponseMapper.ToActionResult(await authService.GenerateChallenge(username));
     }
 
     [HttpPost]
@@ -44,6 +43,6 @@ public class AuthController(IUserService userService, IMapper mapper) : Controll
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest loginRequest)
     {
-        return ServiceResponseMapper.ToActionResult(await userService.Login(loginRequest));
+        return ServiceResponseMapper.ToActionResult(await authService.Login(loginRequest));
     }
 }

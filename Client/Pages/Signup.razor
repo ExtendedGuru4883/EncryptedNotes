@@ -1,0 +1,60 @@
+@page "/signup"
+@using System.Text
+@using BlazorSodium.Sodium
+@using Client.Models
+@using Shared.Dto.Requests
+
+@inject HttpClient HttpClient
+
+<h3>Signup</h3>
+
+<EditForm OnValidSubmit="Submit" Model="_model">
+    <DataAnnotationsValidator/>
+    <ul>
+        @foreach (var error in _errors)
+        {
+            <li class="text-danger">@error</li>
+        }
+    </ul>
+
+    <InputText @bind-Value="_model.Username" placeholder="Username"/>
+    <ValidationMessage For="@(() => _model.Username)"/>
+
+    <InputText @bind-Value="_model.Password" placeholder="Password"/>
+    <ValidationMessage For="@(() => _model.Password)"/>
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    private readonly SignupFormModel _model = new();
+    private List<string> _errors = [];
+
+    private async Task Submit()
+    {
+        _errors.Clear();
+
+        var signatureSaltBytes = RandomBytes.RandomBytes_Buf(PasswordHash.SALT_BYTES);
+
+        var seed = PasswordHash.Crypto_PwHash(
+            32,
+            Encoding.UTF8.GetBytes(_model.Password),
+            signatureSaltBytes,
+            PasswordHash.OPSLIMIT_MODERATE,
+            PasswordHash.MEMLIMIT_MODERATE,
+            PasswordHash.ALG_ARGON2ID13);
+
+        var keyPair = PublicKeySignature.Crypto_Sign_Seed_KeyPair(seed);
+
+        var signupRequest = new SignupRequest()
+        {
+            Username = _model.Username,
+            SignatureSalt = Convert.ToBase64String(signatureSaltBytes),
+            EncryptionSalt = Convert.ToBase64String(RandomBytes.RandomBytes_Buf(PasswordHash.SALT_BYTES)),
+            PublicKey = Convert.ToBase64String(keyPair.PublicKey)
+        };
+
+        var response = await HttpClient.PostAsync("auth/signup", JsonContent.Create(signupRequest));
+    }
+
+}

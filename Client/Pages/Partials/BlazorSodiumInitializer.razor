@@ -1,0 +1,12 @@
+@using BlazorSodium.Services
+
+@inject IBlazorSodiumService BlazorSodiumService
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await BlazorSodiumService.InitializeAsync();
+    }
+
+}

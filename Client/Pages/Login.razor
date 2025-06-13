@@ -1,0 +1,68 @@
+@page "/login"
+@using System.Security.Cryptography.X509Certificates
+@using System.Text
+@using BlazorSodium.Sodium
+@using Client.Models
+@using Shared.Dto.Requests
+@using Shared.Dto.Responses
+
+@inject HttpClient HttpClient
+
+<h3>Login</h3>
+
+<EditForm OnValidSubmit="Submit" Model="_model">
+    <DataAnnotationsValidator/>
+    <ul>
+        @foreach (var error in _errors)
+        {
+            <li class="text-danger">@error</li>
+        }
+    </ul>
+
+    <InputText @bind-Value="_model.Username" placeholder="Username"/>
+    <ValidationMessage For="@(() => _model.Username)"/>
+
+    <InputText @bind-Value="_model.Password" placeholder="Password"/>
+    <ValidationMessage For="@(() => _model.Password)"/>
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    private readonly LoginFormModel _model = new();
+    private List<string> _errors = [];
+
+    private async Task Submit()
+    {
+        _errors.Clear();
+
+        var response = await HttpClient.GetAsync($"auth/GetChallenge?username={_model.Username}");
+        if (!response.IsSuccessStatusCode) return;
+
+        var challengeResponse = await response.Content.ReadFromJsonAsync<ChallengeResponse>();
+        var nonce = challengeResponse.Nonce;
+        var signatureSaltBytes = Convert.FromBase64String(challengeResponse.SignatureSalt);
+        
+        var seed = PasswordHash.Crypto_PwHash(
+            32,
+            Encoding.UTF8.GetBytes(_model.Password),
+            signatureSaltBytes,
+            PasswordHash.OPSLIMIT_MODERATE,
+            PasswordHash.MEMLIMIT_MODERATE,
+            PasswordHash.ALG_ARGON2ID13);
+
+        var keyPair = PublicKeySignature.Crypto_Sign_Seed_KeyPair(seed);
+
+        var signatureBytes = PublicKeySignature.Crypto_Sign_Detached(Convert.FromBase64String(nonce), keyPair.PrivateKey);
+
+        var loginRequest = new LoginRequest()
+        {
+            Username = _model.Username,
+            Nonce = nonce,
+            NonceSignature = Convert.ToBase64String(signatureBytes)
+        };
+
+        await HttpClient.PostAsync("auth/login", JsonContent.Create(loginRequest));
+    }
+
+}

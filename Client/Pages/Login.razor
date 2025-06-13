@@ -2,7 +2,7 @@
 
 <h3>Login</h3>
 
-<EditForm OnValidSubmit="Submit" Model="_model">
+<EditForm OnValidSubmit="SubmitAsync" Model="_model">
     <DataAnnotationsValidator/>
     <ul>
         @foreach (var error in _errors)
@@ -17,5 +17,5 @@
     <InputText @bind-Value="_model.Password" placeholder="Password"/>
     <ValidationMessage For="@(() => _model.Password)"/>
 
-    <button type="submit">Submit</button>
+    <button type="submit" disabled="@_isLoading">@(_isLoading ? "Loading..." : "Login")</button>
 </EditForm>

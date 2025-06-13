@@ -62,7 +62,10 @@
             NonceSignature = Convert.ToBase64String(signatureBytes)
         };
 
-        await HttpClient.PostAsync("auth/login", JsonContent.Create(loginRequest));
+        response = await HttpClient.PostAsync("auth/login", JsonContent.Create(loginRequest));
+        var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        Console.WriteLine(loginResponse.Token);
+        Console.WriteLine(loginResponse.EncryptionSalt);
     }
 
 }

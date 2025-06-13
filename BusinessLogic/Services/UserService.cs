@@ -12,7 +12,7 @@ using Sodium;
 
 namespace BusinessLogic.Services;
 
-public class UserService(IUserRepository userRepository, IMapper mapper, IMemoryCache cache) : IUserService
+public class UserService(IUserRepository userRepository, IJwtService jwtService, IMapper mapper, IMemoryCache cache) : IUserService
 {
     public async Task<ServiceResult<UserDto>> AddAsync(UserDto userDto)
     {
@@ -66,7 +66,7 @@ public class UserService(IUserRepository userRepository, IMapper mapper, IMemory
 
         var loginResponse = new LoginResponse()
         {
-            Token = "pippo",
+            Token = jwtService.GenerateToken(loginRequest.Username),
             EncryptionSalt = encryptionSalt,
         };
         

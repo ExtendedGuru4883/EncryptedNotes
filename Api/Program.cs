@@ -1,3 +1,4 @@
+using BusinessLogic.Configurations;
 using BusinessLogic.Mapping;
 using BusinessLogic.Services;
 using Core.Interfaces.BusinessLogic.Services;
@@ -30,10 +31,19 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 //Service
 builder.Services.AddScoped<IUserService, UserService>();
 
+//JWT
+builder.Services
+    .AddOptions<JwtSettings>()
+    .Bind(builder.Configuration.GetSection("JwtSettings"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AddSingleton<IJwtService, JwtService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.MapControllers();
 

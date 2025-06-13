@@ -46,8 +46,8 @@ public class UserService(
         var nonce = Convert.ToBase64String(Sodium.SodiumCore.GetRandomBytes(32));
         var challengeResponse = new ChallengeResponse()
         {
-            SignatureSalt = signatureSalt,
-            Nonce = nonce
+            SignatureSaltBase64 = signatureSalt,
+            NonceBase64 = nonce
         };
 
         cache.Set($"nonce:{username}", nonce, TimeSpan.FromMinutes(2));
@@ -70,7 +70,7 @@ public class UserService(
             return ServiceResult<LoginResponse>.Failure("Challenge corrupted", ServiceResponseErrorType.InternalServerError);
         }
 
-        if (nonce != loginRequest.Nonce)
+        if (nonce != loginRequest.NonceBase64)
         {
             logger.LogWarning("Nonce found for user {username} but request nonce is different", loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge invalid", ServiceResponseErrorType.Unauthorized);
@@ -88,8 +88,8 @@ public class UserService(
 
         try
         {
-            var signatureBytes = Convert.FromBase64String(loginRequest.NonceSignature);
-            var nonceBytes = Convert.FromBase64String(loginRequest.Nonce);
+            var signatureBytes = Convert.FromBase64String(loginRequest.NonceSignatureBase64);
+            var nonceBytes = Convert.FromBase64String(loginRequest.NonceBase64);
             var publicKeyBytes = Convert.FromBase64String(publicKey);
             if (!PublicKeyAuth.VerifyDetached(signatureBytes,
                     nonceBytes, publicKeyBytes))
@@ -118,7 +118,7 @@ public class UserService(
         var loginResponse = new LoginResponse()
         {
             Token = jwtService.GenerateToken(loginRequest.Username),
-            EncryptionSalt = encryptionSalt,
+            EncryptionSaltBase64 = encryptionSalt,
         };
         logger.LogInformation("Login completed by user {username}. Generated JWT and retrieved encryption salt", loginRequest.Username);
         return ServiceResult<LoginResponse>.SuccessOk(loginResponse);

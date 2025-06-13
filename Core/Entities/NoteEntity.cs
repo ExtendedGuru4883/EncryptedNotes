@@ -6,9 +6,9 @@ namespace Core.Entities;
 public class NoteEntity : BaseEntity
 {
     [Required]
-    public required string Title { get; set; }
+    public required string EncryptedTitleBase64 { get; set; }
     [Required]
-    public required string Content { get; set; }
+    public required string EncryptedContentBase64 { get; set; }
     [Required]
     public DateTime TimeStamp { get; set; } = DateTime.Now;
     

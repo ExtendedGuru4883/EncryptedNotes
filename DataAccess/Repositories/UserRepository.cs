@@ -25,7 +25,7 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
         return await dbContext.Users
             .AsNoTracking()
             .Where(u => u.Username == username)
-            .Select(u => u.SignatureSalt)
+            .Select(u => u.SignatureSaltBase64)
             .FirstOrDefaultAsync();
     }
 
@@ -34,7 +34,7 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
         return await dbContext.Users
             .AsNoTracking()
             .Where(u => u.Username == username)
-            .Select(u => u.EncryptionSalt)
+            .Select(u => u.EncryptionSaltBase64)
             .FirstOrDefaultAsync();
     }
 
@@ -43,7 +43,7 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
         return await dbContext.Users
             .AsNoTracking()
             .Where(u => u.Username == username)
-            .Select(u => u.PublicKey)
+            .Select(u => u.PublicKeyBase64)
             .FirstOrDefaultAsync();
     }
 }

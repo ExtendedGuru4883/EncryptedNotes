@@ -8,11 +8,11 @@ public class UserEntity : BaseEntity
     [Required]
     public required string Username { get; set; }
     [Required]
-    public required string SignatureSalt { get; set; }
+    public required string SignatureSaltBase64 { get; set; }
     [Required]
-    public required string EncryptionSalt { get; set; }
+    public required string EncryptionSaltBase64 { get; set; }
     [Required]
-    public required string PublicKey { get; set; }
+    public required string PublicKeyBase64 { get; set; }
 
     //Navigation properties
     public IEnumerable<NoteEntity> Notes { get; set; } = [];

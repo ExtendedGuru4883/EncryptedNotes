@@ -12,18 +12,14 @@ namespace Test.Unit.BusinessLogic.Services;
 
 public class UserServiceTests
 {
-    private readonly Mock<IUserRepository> _mockUserRepository;
-    private readonly Mock<IMapper> _mockMapper;
-    private readonly Mock<ILogger<UserService>> _mockLogger;
+    private readonly Mock<IUserRepository> _mockUserRepository = new();
+    private readonly Mock<IMapper> _mockMapper = new();
+    private readonly Mock<ILogger<UserService>> _mockLogger = new();
 
     private readonly UserService _userService;
 
     public UserServiceTests()
     {
-        _mockUserRepository = new Mock<IUserRepository>();
-        _mockMapper = new Mock<IMapper>();
-        _mockLogger = new Mock<ILogger<UserService>>();
-
         _userService = new UserService(_mockUserRepository.Object, _mockMapper.Object, _mockLogger.Object);
     }
 
@@ -82,15 +78,26 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task AddAsync_InvalidSignatureSaltBase64_ReturnsBadRequestFailure()
+    public async Task AddAsync_InvalidSignatureSaltBase64_ReturnsBadRequestFailure() =>
+        await AddAsync_InvalidBase64Field_ReturnsBadRequestFailure(nameof(UserDto.SignatureSaltBase64));
+    
+    [Fact]
+    public async Task AddAsync_InvalidEncryptionSaltBase64_ReturnsBadRequestFailure() =>
+        await AddAsync_InvalidBase64Field_ReturnsBadRequestFailure(nameof(UserDto.EncryptionSaltBase64));
+
+    [Fact]
+    public async Task AddAsync_InvalidPublicKeyBase64_ReturnsBadRequestFailure() =>
+        await AddAsync_InvalidBase64Field_ReturnsBadRequestFailure(nameof(UserDto.PublicKeyBase64));
+
+    private async Task AddAsync_InvalidBase64Field_ReturnsBadRequestFailure(string invalidField)
     {
         //Arrange
         var userDto = new UserDto
         {
             Username = "test",
-            SignatureSaltBase64 = "dmFsaWRCYXNlNjQ=!!", //Invalid
-            EncryptionSaltBase64 = "dmFsaWRCYXNlNjQ=",
-            PublicKeyBase64 = "dmFsaWRCYXNlNjQ="
+            SignatureSaltBase64 = GetBase64Value(nameof(UserDto.SignatureSaltBase64) != invalidField),
+            EncryptionSaltBase64 = GetBase64Value(nameof(UserDto.EncryptionSaltBase64) != invalidField),
+            PublicKeyBase64 = GetBase64Value(nameof(UserDto.PublicKeyBase64) != invalidField)
         };
 
         //Mock
@@ -102,66 +109,15 @@ public class UserServiceTests
 
         //Assert
         serviceResult.IsSuccess.Should()
-            .BeFalse("because if SignatureSaltBase64 is not a valid base64 the user should not be added");
+            .BeFalse($"because if {invalidField} is not a valid base64 the user should not be added");
         serviceResult.ErrorMessage.Should()
             .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
         serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
         serviceResult.ErrorType.Should().Be(ServiceResponseErrorType.BadRequest);
     }
-
-    [Fact]
-    public async Task AddAsync_InvalidEncryptionSaltBase64_ReturnsBadRequestFailure()
+    
+    private static string GetBase64Value(bool isValid)
     {
-        //Arrange
-        var userDto = new UserDto
-        {
-            Username = "test",
-            SignatureSaltBase64 = "dmFsaWRCYXNlNjQ=",
-            EncryptionSaltBase64 = "dmFsaWRCYXNlNjQ=!!", //Invalid
-            PublicKeyBase64 = "dmFsaWRCYXNlNjQ="
-        };
-
-        //Mock
-        _mockUserRepository.Setup(r => r.UsernameExists(userDto.Username))
-            .ReturnsAsync(false);
-
-        //Act
-        var serviceResult = await _userService.AddAsync(userDto);
-
-        //Assert
-        serviceResult.IsSuccess.Should()
-            .BeFalse("because if EncryptionSaltBase64 is not a valid base64 the user should not be added");
-        serviceResult.ErrorMessage.Should()
-            .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
-        serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
-        serviceResult.ErrorType.Should().Be(ServiceResponseErrorType.BadRequest);
-    }
-
-    [Fact]
-    public async Task AddAsync_InvalidPublicKeyBase64_ReturnsBadRequestFailure()
-    {
-        //Arrange
-        var userDto = new UserDto
-        {
-            Username = "test",
-            SignatureSaltBase64 = "dmFsaWRCYXNlNjQ=",
-            EncryptionSaltBase64 = "dmFsaWRCYXNlNjQ=",
-            PublicKeyBase64 = "dmFsaWRCYXNlNjQ=!!" //Invalid
-        };
-
-        //Mock
-        _mockUserRepository.Setup(r => r.UsernameExists(userDto.Username))
-            .ReturnsAsync(false);
-
-        //Act
-        var serviceResult = await _userService.AddAsync(userDto);
-
-        //Assert
-        serviceResult.IsSuccess.Should()
-            .BeFalse("because if PublicKeyBase64 is not a valid base64 the user should not be added");
-        serviceResult.ErrorMessage.Should()
-            .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
-        serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
-        serviceResult.ErrorType.Should().Be(ServiceResponseErrorType.BadRequest);
+        return isValid ? "dmFsaWRCYXNlNjQ=" : "dmFsaWRCYXNlNjQ=!!";
     }
 }

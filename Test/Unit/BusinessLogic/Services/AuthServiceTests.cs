@@ -51,7 +51,7 @@ public class AuthServiceTests
         serviceResult.ErrorMessage.Should().BeEmpty("because if IsSuccess is true there should be no error message");
         serviceResult.Data.Should()
             .BeOfType<ChallengeResponse>("because in case of success the service should return the challenge");
-        serviceResult.SuccessType.Should().Be(ServiceResponseSuccessType.Ok);
+        serviceResult.SuccessType.Should().Be(ServiceResultSuccessType.Ok);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class AuthServiceTests
         serviceResult.ErrorMessage.Should()
             .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
         serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
-        serviceResult.ErrorType.Should().Be(ServiceResponseErrorType.NotFound);
+        serviceResult.ErrorType.Should().Be(ServiceResultErrorType.NotFound);
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public class AuthServiceTests
         serviceResult.ErrorMessage.Should().BeEmpty("because if IsSuccess is true there should be no error message");
         serviceResult.Data.Should()
             .BeOfType<LoginResponse>("because in case of success the service should return the login response");
-        serviceResult.SuccessType.Should().Be(ServiceResponseSuccessType.Ok);
+        serviceResult.SuccessType.Should().Be(ServiceResultSuccessType.Ok);
     }
     
     [Fact]
@@ -148,7 +148,7 @@ public class AuthServiceTests
         serviceResult.ErrorMessage.Should()
             .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
         serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
-        serviceResult.ErrorType.Should().Be(ServiceResponseErrorType.Unauthorized);
+        serviceResult.ErrorType.Should().Be(ServiceResultErrorType.Unauthorized);
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class AuthServiceTests
         serviceResult.ErrorMessage.Should()
             .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
         serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
-        serviceResult.ErrorType.Should().Be(ServiceResponseErrorType.Unauthorized);
+        serviceResult.ErrorType.Should().Be(ServiceResultErrorType.Unauthorized);
     }
     
     [Fact]
@@ -207,7 +207,7 @@ public class AuthServiceTests
         serviceResult.ErrorMessage.Should()
             .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
         serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
-        serviceResult.ErrorType.Should().Be(ServiceResponseErrorType.Unauthorized);
+        serviceResult.ErrorType.Should().Be(ServiceResultErrorType.Unauthorized);
     }
     
     [Fact]
@@ -238,6 +238,6 @@ public class AuthServiceTests
         serviceResult.ErrorMessage.Should()
             .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
         serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
-        serviceResult.ErrorType.Should().Be(ServiceResponseErrorType.BadRequest);
+        serviceResult.ErrorType.Should().Be(ServiceResultErrorType.BadRequest);
     }
 }

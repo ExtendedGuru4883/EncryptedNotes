@@ -7,11 +7,11 @@ public record ServiceResult<T>
     public bool IsSuccess { get; init; }
     public T? Data { get; init; }
     public string ErrorMessage { get; init; } = string.Empty;
-    public ServiceResponseSuccessType? SuccessType { get; init; }
-    public ServiceResponseErrorType? ErrorType { get; init; }
+    public ServiceResultSuccessType? SuccessType { get; init; }
+    public ServiceResultErrorType? ErrorType { get; init; }
 
     //Success
-    public static ServiceResult<T> Success(T data, ServiceResponseSuccessType successType) => new ServiceResult<T>()
+    public static ServiceResult<T> Success(T data, ServiceResultSuccessType successType) => new ServiceResult<T>()
     {
         IsSuccess = true,
         Data = data,
@@ -22,11 +22,11 @@ public record ServiceResult<T>
     {
         IsSuccess = true,
         Data = data,
-        SuccessType = ServiceResponseSuccessType.Ok
+        SuccessType = ServiceResultSuccessType.Ok
     };
     
     //Failure
-    public static ServiceResult<T> Failure(string errorMessage, ServiceResponseErrorType errorType) => new ServiceResult<T>()
+    public static ServiceResult<T> Failure(string errorMessage, ServiceResultErrorType errorType) => new ServiceResult<T>()
     {
         IsSuccess = false,
         ErrorType = errorType,

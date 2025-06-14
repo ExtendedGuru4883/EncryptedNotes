@@ -41,7 +41,7 @@ public class UserServiceTests
         serviceResult.ErrorMessage.Should().BeEmpty("because if IsSuccess is true there should be no error message");
         serviceResult.Data.Should()
             .BeEquivalentTo(userDto, "because in case of success the service should return the created user");
-        serviceResult.SuccessType.Should().Be(ServiceResponseSuccessType.Created);
+        serviceResult.SuccessType.Should().Be(ServiceResultSuccessType.Created);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class UserServiceTests
         serviceResult.ErrorMessage.Should()
             .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
         serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
-        serviceResult.ErrorType.Should().Be(ServiceResponseErrorType.Conflict);
+        serviceResult.ErrorType.Should().Be(ServiceResultErrorType.Conflict);
     }
 
     [Fact]
@@ -107,6 +107,6 @@ public class UserServiceTests
         serviceResult.ErrorMessage.Should()
             .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
         serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
-        serviceResult.ErrorType.Should().Be(ServiceResponseErrorType.BadRequest);
+        serviceResult.ErrorType.Should().Be(ServiceResultErrorType.BadRequest);
     }
 }

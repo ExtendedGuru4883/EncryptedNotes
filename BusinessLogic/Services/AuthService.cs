@@ -26,7 +26,7 @@ public class AuthService(
             logger.LogInformation(
                 "Retrieving signature salt for user {username} failed: user doesn't exist (or potential data inconsistency)",
                 username);
-            return ServiceResult<ChallengeResponse>.Failure("User not found", ServiceResponseErrorType.NotFound);
+            return ServiceResult<ChallengeResponse>.Failure("User not found", ServiceResultErrorType.NotFound);
         }
 
         logger.LogInformation("Retrieved signature salt for user {username}", username);
@@ -50,7 +50,7 @@ public class AuthService(
         {
             logger.LogWarning("Nonce not found for user {username}", loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge expired or invalid",
-                ServiceResponseErrorType.Unauthorized);
+                ServiceResultErrorType.Unauthorized);
         }
 
         cache.Remove($"nonceBase64:{loginRequest.Username}");
@@ -60,14 +60,14 @@ public class AuthService(
         {
             logger.LogError("Nonce is null or empty for user {username} is valid", loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge corrupted",
-                ServiceResponseErrorType.InternalServerError);
+                ServiceResultErrorType.InternalServerError);
         }
 
         if (cachedNonceBase64 != loginRequest.NonceBase64)
         {
             logger.LogWarning("Nonce for user {username} is valid but request nonce is different",
                 loginRequest.Username);
-            return ServiceResult<LoginResponse>.Failure("Challenge invalid", ServiceResponseErrorType.Unauthorized);
+            return ServiceResult<LoginResponse>.Failure("Challenge invalid", ServiceResultErrorType.Unauthorized);
         }
 
         logger.LogInformation("Nonce for user {username} is valid and matched request nonce", loginRequest.Username);
@@ -84,7 +84,7 @@ public class AuthService(
                 "Public ket not found for user {username}, but valid nonce was found (so challenge generation succeeded and the user must exist). Data inconsistency?",
                 loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Public key not found",
-                ServiceResponseErrorType.InternalServerError);
+                ServiceResultErrorType.InternalServerError);
         }
 
         try
@@ -97,13 +97,13 @@ public class AuthService(
             {
                 logger.LogInformation("Challenge failed by user {username}, invalid signature", loginRequest.Username);
                 return ServiceResult<LoginResponse>.Failure("Challenge failed: invalid signature",
-                    ServiceResponseErrorType.Unauthorized);
+                    ServiceResultErrorType.Unauthorized);
             }
         }
         catch (FormatException ex)
         {
             logger.LogWarning(ex, "Invalid Base64 format in login request for user {username}", loginRequest.Username);
-            return ServiceResult<LoginResponse>.Failure("Invalid input format", ServiceResponseErrorType.BadRequest);
+            return ServiceResult<LoginResponse>.Failure("Invalid input format", ServiceResultErrorType.BadRequest);
         }
 
         logger.LogInformation("Challenge completed by user {username}", loginRequest.Username);
@@ -120,7 +120,7 @@ public class AuthService(
                 "Challenge completed by user {username}, but encryption salt not found. Potential data inconsistency.",
                 loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge completed. User encryption salt not found",
-                ServiceResponseErrorType.InternalServerError);
+                ServiceResultErrorType.InternalServerError);
         }
 
         var loginResponse = new LoginResponse()

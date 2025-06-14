@@ -1,6 +1,6 @@
 namespace Shared.Enums;
 
-public enum ServiceResponseSuccessType
+public enum ServiceResultSuccessType
 {
     Ok = 200,
     Created = 201,

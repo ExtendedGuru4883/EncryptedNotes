@@ -5,7 +5,7 @@ using Shared.Responses;
 
 namespace EncryptedNotes.Helpers;
 
-public static class ServiceResponseMapper
+public static class ServiceResultMapper
 {
     public static ActionResult<T> ToActionResult<T>(ServiceResult<T> serviceResult)
     {
@@ -13,8 +13,8 @@ public static class ServiceResponseMapper
         {
             var statusCode = serviceResult.SuccessType switch
             {
-                ServiceResponseSuccessType.Created => StatusCodes.Status201Created,
-                ServiceResponseSuccessType.NoContent => StatusCodes.Status204NoContent,
+                ServiceResultSuccessType.Created => StatusCodes.Status201Created,
+                ServiceResultSuccessType.NoContent => StatusCodes.Status204NoContent,
                 _ => StatusCodes.Status200OK
             };
 
@@ -29,11 +29,11 @@ public static class ServiceResponseMapper
         {
             var statusCode = serviceResult.ErrorType switch
             {
-                ServiceResponseErrorType.Conflict => StatusCodes.Status409Conflict,
-                ServiceResponseErrorType.NotFound => StatusCodes.Status404NotFound,
-                ServiceResponseErrorType.BadRequest => StatusCodes.Status400BadRequest,
-                ServiceResponseErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-                ServiceResponseErrorType.Forbidden => StatusCodes.Status403Forbidden,
+                ServiceResultErrorType.Conflict => StatusCodes.Status409Conflict,
+                ServiceResultErrorType.NotFound => StatusCodes.Status404NotFound,
+                ServiceResultErrorType.BadRequest => StatusCodes.Status400BadRequest,
+                ServiceResultErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+                ServiceResultErrorType.Forbidden => StatusCodes.Status403Forbidden,
                 _ => StatusCodes.Status500InternalServerError
             };
 

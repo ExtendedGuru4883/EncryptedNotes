@@ -21,7 +21,7 @@ public class AuthController(IUserService userService, IAuthService authService, 
     public async Task<ActionResult<UserDto>> Signup([FromBody] SignupRequest signupRequest)
     {
         var userDto = mapper.Map<UserDto>(signupRequest);
-        return ServiceResponseMapper.ToActionResult(await userService.AddAsync(userDto));
+        return ServiceResultMapper.ToActionResult(await userService.AddAsync(userDto));
     }
 
     [HttpGet]
@@ -31,7 +31,7 @@ public class AuthController(IUserService userService, IAuthService authService, 
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ChallengeResponse>> GetChallenge([FromQuery][Required] string username)
     {
-        return ServiceResponseMapper.ToActionResult(await authService.GenerateChallenge(username));
+        return ServiceResultMapper.ToActionResult(await authService.GenerateChallenge(username));
     }
 
     [HttpPost]
@@ -43,6 +43,6 @@ public class AuthController(IUserService userService, IAuthService authService, 
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest loginRequest)
     {
-        return ServiceResponseMapper.ToActionResult(await authService.Login(loginRequest));
+        return ServiceResultMapper.ToActionResult(await authService.Login(loginRequest));
     }
 }

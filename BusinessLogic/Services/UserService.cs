@@ -19,7 +19,7 @@ public class UserService(
         if (await userRepository.UsernameExists(userDto.Username))
         {
             logger.LogInformation("Adding new user {username} failed: username already exists", userDto.Username);
-            return ServiceResult<UserDto>.Failure("Username already exists", ServiceResponseErrorType.Conflict);
+            return ServiceResult<UserDto>.Failure("Username already exists", ServiceResultErrorType.Conflict);
         }
 
         try
@@ -33,11 +33,11 @@ public class UserService(
             logger.LogInformation("Adding new user {username} failed: invalid base64 in request", userDto.Username);
             return ServiceResult<UserDto>.Failure(
                 "EncryptionSaltBase64, SignatureSaltBase64 and PublicKeyBase64 must be valid base64 strings",
-                ServiceResponseErrorType.BadRequest);
+                ServiceResultErrorType.BadRequest);
         }
 
         await userRepository.AddAsync(mapper.Map<UserEntity>(userDto));
         logger.LogInformation("Adding new user {username} succeeded", userDto.Username);
-        return ServiceResult<UserDto>.Success(userDto, ServiceResponseSuccessType.Created);
+        return ServiceResult<UserDto>.Success(userDto, ServiceResultSuccessType.Created);
     }
 }

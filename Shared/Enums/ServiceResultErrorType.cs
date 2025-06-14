@@ -1,6 +1,6 @@
 namespace Shared.Enums;
 
-public enum ServiceResponseErrorType
+public enum ServiceResultErrorType
 {
     Conflict = 409,
     NotFound = 404,

@@ -1,6 +1,6 @@
 using AutoMapper;
 using BusinessLogic.Services;
-using Core.Entities;
+using Test.TestHelpers;
 using Core.Interfaces.DataAccess.Repositories;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -24,19 +24,13 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task AddAsync_ValidUser_ReturnsSuccess()
+    public async Task AddAsync_ValidUser_ReturnsSuccessCreated()
     {
         //Arrange
-        var userDto = new UserDto
-        {
-            Username = "new-username",
-            SignatureSaltBase64 = "dmFsaWRCYXNlNjQ=",
-            EncryptionSaltBase64 = "dmFsaWRCYXNlNjQ=",
-            PublicKeyBase64 = "dmFsaWRCYXNlNjQ="
-        };
+        var userDto = TestDataProvider.GetUserDto();
 
         //Mock
-        _mockUserRepository.Setup(r => r.UsernameExists(userDto.Username))
+        _mockUserRepository.Setup(r => r.UsernameExists(It.IsAny<string>()))
             .ReturnsAsync(false);
 
         //Act
@@ -54,17 +48,11 @@ public class UserServiceTests
     public async Task AddAsync_UsernameExists_ReturnsConflictFailure()
     {
         //Arrange
-        var userDto = new UserDto
-        {
-            Username = "existing-username",
-            SignatureSaltBase64 = "test",
-            EncryptionSaltBase64 = "test",
-            PublicKeyBase64 = "test"
-        };
+        var userDto = TestDataProvider.GetUserDto();
 
         //Mock
-        _mockUserRepository.Setup(r => r.UsernameExists(userDto.Username))
-            .ReturnsAsync(true);
+        _mockUserRepository.Setup(r => r.UsernameExists(It.IsAny<string>()))
+            .ReturnsAsync(true); //Mocking username already existing
 
         //Act
         var serviceResult = await _userService.AddAsync(userDto);
@@ -94,14 +82,14 @@ public class UserServiceTests
         //Arrange
         var userDto = new UserDto
         {
-            Username = "test",
-            SignatureSaltBase64 = GetBase64Value(nameof(UserDto.SignatureSaltBase64) != invalidField),
-            EncryptionSaltBase64 = GetBase64Value(nameof(UserDto.EncryptionSaltBase64) != invalidField),
-            PublicKeyBase64 = GetBase64Value(nameof(UserDto.PublicKeyBase64) != invalidField)
+            Username = "test-username",
+            SignatureSaltBase64 = TestDataProvider.GetBase64Value(nameof(UserDto.SignatureSaltBase64) != invalidField),
+            EncryptionSaltBase64 = TestDataProvider.GetBase64Value(nameof(UserDto.EncryptionSaltBase64) != invalidField),
+            PublicKeyBase64 = TestDataProvider.GetBase64Value(nameof(UserDto.PublicKeyBase64) != invalidField)
         };
 
         //Mock
-        _mockUserRepository.Setup(r => r.UsernameExists(userDto.Username))
+        _mockUserRepository.Setup(r => r.UsernameExists(It.IsAny<string>()))
             .ReturnsAsync(false);
 
         //Act
@@ -114,10 +102,5 @@ public class UserServiceTests
             .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
         serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
         serviceResult.ErrorType.Should().Be(ServiceResponseErrorType.BadRequest);
-    }
-    
-    private static string GetBase64Value(bool isValid)
-    {
-        return isValid ? "dmFsaWRCYXNlNjQ=" : "dmFsaWRCYXNlNjQ=!!";
     }
 }

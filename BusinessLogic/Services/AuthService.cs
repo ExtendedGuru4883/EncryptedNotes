@@ -38,7 +38,7 @@ public class AuthService(
             NonceBase64 = nonce
         };
 
-        cache.Set($"nonce:{username}", nonce, TimeSpan.FromMinutes(2));
+        cache.Set($"nonceBase64:{username}", nonce, TimeSpan.FromMinutes(2));
 
         logger.LogInformation("Generated challenge for user {username}", username);
         return ServiceResult<ChallengeResponse>.SuccessOk(challengeResponse);
@@ -46,34 +46,42 @@ public class AuthService(
 
     public async Task<ServiceResult<LoginResponse>> Login(LoginRequest loginRequest)
     {
-        if (!cache.TryGetValue($"nonce:{loginRequest.Username}", out string? nonce))
+        if (!cache.TryGetValue($"nonceBase64:{loginRequest.Username}", out string? cachedNonceBase64))
         {
             logger.LogWarning("Nonce not found for user {username}", loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge expired or invalid",
                 ServiceResponseErrorType.Unauthorized);
         }
 
-        if (string.IsNullOrEmpty(nonce))
+        cache.Remove($"nonceBase64:{loginRequest.Username}");
+        logger.LogInformation("Nonce found for user {username} and removed from cache", loginRequest.Username);
+
+        if (string.IsNullOrEmpty(cachedNonceBase64))
         {
-            logger.LogError("Nonce found but null or empty for user {username}", loginRequest.Username);
+            logger.LogError("Nonce is null or empty for user {username} is valid", loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge corrupted",
                 ServiceResponseErrorType.InternalServerError);
         }
 
-        if (nonce != loginRequest.NonceBase64)
+        if (cachedNonceBase64 != loginRequest.NonceBase64)
         {
-            logger.LogWarning("Nonce found for user {username} but request nonce is different", loginRequest.Username);
+            logger.LogWarning("Nonce for user {username} is valid but request nonce is different",
+                loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge invalid", ServiceResponseErrorType.Unauthorized);
         }
 
-        cache.Remove($"nonce:{loginRequest.Username}");
-        logger.LogInformation("Valid nonce found for user {username}. Nonce removed from cache", loginRequest.Username);
+        logger.LogInformation("Nonce for user {username} is valid and matched request nonce", loginRequest.Username);
 
         var publicKey = await userRepository.GetPublicKeyByUsername(loginRequest.Username);
         if (publicKey is null)
         {
+            //This situation is only possible if the user exists in the database (otherwise it wouldn't have been possible
+            //to generate a challenge as it needs to retrieve and send the user signature salt) but has an empty public
+            //key (which is a required field in both the database and the signup request) so it indicates a problem in the database
+            //TODO when user deletion is implemented, decide if this should be handled differently as it would be
+            //possible for a user to get a challenge, delete its account and then try to log in
             logger.LogError(
-                "Public ket not found for user {username}, but valid nonce was found. Potential data inconsistency.",
+                "Public ket not found for user {username}, but valid nonce was found (so challenge generation succeeded and the user must exist). Data inconsistency?",
                 loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Public key not found",
                 ServiceResponseErrorType.InternalServerError);
@@ -82,7 +90,7 @@ public class AuthService(
         try
         {
             var signatureBytes = Convert.FromBase64String(loginRequest.NonceSignatureBase64);
-            var nonceBytes = Convert.FromBase64String(loginRequest.NonceBase64);
+            var nonceBytes = Convert.FromBase64String(cachedNonceBase64);
             var publicKeyBytes = Convert.FromBase64String(publicKey);
             if (!signatureHelper.VerifyDetachedSignature(signatureBytes,
                     nonceBytes, publicKeyBytes))
@@ -103,6 +111,11 @@ public class AuthService(
         var encryptionSalt = await userRepository.GetEncryptionSaltByUsername(loginRequest.Username);
         if (encryptionSalt is null)
         {
+            //This situation is only possible if the user exists in the database (otherwise it wouldn't have been possible
+            //to generate a challenge as it needs to retrieve and send the user signature salt) but has an empty encryption
+            //salt (which is a required field in both the database and the signup request) so it indicates a problem in the database
+            //TODO when user deletion is implemented, decide if this should be handled differently as it would be
+            //possible for a user to get a challenge, delete its account and then try to log in
             logger.LogError(
                 "Challenge completed by user {username}, but encryption salt not found. Potential data inconsistency.",
                 loginRequest.Username);

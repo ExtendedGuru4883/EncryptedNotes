@@ -68,7 +68,7 @@ public class UserServiceTests
     [Fact]
     public async Task AddAsync_InvalidSignatureSaltBase64_ReturnsBadRequestFailure() =>
         await AddAsync_InvalidBase64Field_ReturnsBadRequestFailure(nameof(UserDto.SignatureSaltBase64));
-    
+
     [Fact]
     public async Task AddAsync_InvalidEncryptionSaltBase64_ReturnsBadRequestFailure() =>
         await AddAsync_InvalidBase64Field_ReturnsBadRequestFailure(nameof(UserDto.EncryptionSaltBase64));
@@ -83,9 +83,15 @@ public class UserServiceTests
         var userDto = new UserDto
         {
             Username = "test-username",
-            SignatureSaltBase64 = TestDataProvider.GetBase64Value(nameof(UserDto.SignatureSaltBase64) != invalidField),
-            EncryptionSaltBase64 = TestDataProvider.GetBase64Value(nameof(UserDto.EncryptionSaltBase64) != invalidField),
-            PublicKeyBase64 = TestDataProvider.GetBase64Value(nameof(UserDto.PublicKeyBase64) != invalidField)
+            SignatureSaltBase64 = nameof(UserDto.SignatureSaltBase64) == invalidField
+                ? TestDataProvider.GetInvalidBase64Value()
+                : TestDataProvider.GetValidBase64Value(),
+            EncryptionSaltBase64 = nameof(UserDto.EncryptionSaltBase64) == invalidField
+                ? TestDataProvider.GetInvalidBase64Value()
+                : TestDataProvider.GetValidBase64Value(),
+            PublicKeyBase64 = nameof(UserDto.PublicKeyBase64) == invalidField
+                ? TestDataProvider.GetInvalidBase64Value()
+                : TestDataProvider.GetValidBase64Value()
         };
 
         //Mock

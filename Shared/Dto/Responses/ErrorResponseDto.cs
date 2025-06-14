@@ -2,7 +2,7 @@ namespace Shared.Dto.Responses;
 
 public class ErrorResponseDto
 {
-    public string ErrorMessage { get; set; } = string.Empty;
+    public string ErrorMessage { get; init; } = string.Empty;
     
     public ErrorResponseDto() { }
     

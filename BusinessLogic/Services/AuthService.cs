@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Shared.Dto.Requests;
 using Shared.Dto.Responses;
 using Shared.Enums;
-using Shared.Responses;
+using Shared.Results;
 
 namespace BusinessLogic.Services;
 

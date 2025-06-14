@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dto.Responses;
 using Shared.Enums;
-using Shared.Responses;
+using Shared.Results;
 
 namespace EncryptedNotes.Helpers;
 
@@ -9,38 +9,38 @@ public static class ServiceResultMapper
 {
     public static ActionResult<T> ToActionResult<T>(ServiceResult<T> serviceResult)
     {
+        int statusCode;
+        object? content;
+        
         if (serviceResult.IsSuccess)
         {
-            var statusCode = serviceResult.SuccessType switch
+            statusCode = serviceResult.SuccessType switch
             {
                 ServiceResultSuccessType.Created => StatusCodes.Status201Created,
-                ServiceResultSuccessType.NoContent => StatusCodes.Status204NoContent,
                 _ => StatusCodes.Status200OK
             };
-
-            return statusCode == StatusCodes.Status204NoContent
-                ? new NoContentResult()
-                : new JsonResult(serviceResult.Data)
-                {
-                    StatusCode = statusCode
-                };
+            
+            content = serviceResult.Data;
         }
         else
         {
-            var statusCode = serviceResult.ErrorType switch
+            statusCode = serviceResult.ErrorType switch
             {
-                ServiceResultErrorType.Conflict => StatusCodes.Status409Conflict,
-                ServiceResultErrorType.NotFound => StatusCodes.Status404NotFound,
                 ServiceResultErrorType.BadRequest => StatusCodes.Status400BadRequest,
                 ServiceResultErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
                 ServiceResultErrorType.Forbidden => StatusCodes.Status403Forbidden,
+                ServiceResultErrorType.NotFound => StatusCodes.Status404NotFound,
+                ServiceResultErrorType.Conflict => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status500InternalServerError
             };
-
-            return new JsonResult(new ErrorResponseDto(serviceResult.ErrorMessage))
-            {
-                StatusCode = statusCode
-            };
+            
+            content = new ErrorResponseDto(serviceResult.ErrorMessage);
         }
+
+        return new JsonResult(content)
+        {
+            ContentType = "application/json",
+            StatusCode = statusCode
+        };
     }
 }

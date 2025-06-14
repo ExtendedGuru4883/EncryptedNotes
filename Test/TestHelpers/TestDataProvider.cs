@@ -1,5 +1,6 @@
 using Shared.Dto;
 using Shared.Dto.Requests;
+using Shared.Dto.Responses;
 
 namespace Test.TestHelpers;
 
@@ -34,6 +35,11 @@ public static class TestDataProvider
             EncryptionSaltBase64 = GetValidBase64Value(),
             PublicKeyBase64 = GetValidBase64Value()
         };
+    }
+    
+    public static ErrorResponseDto GetErrorResponseDto()
+    {
+        return new ErrorResponseDto("test-error");
     }
 
     public static LoginRequest GetValidLoginRequest()

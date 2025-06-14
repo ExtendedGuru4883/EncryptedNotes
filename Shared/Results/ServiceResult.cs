@@ -1,6 +1,6 @@
 using Shared.Enums;
 
-namespace Shared.Responses;
+namespace Shared.Results;
 
 public record ServiceResult<T>
 {

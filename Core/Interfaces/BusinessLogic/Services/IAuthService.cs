@@ -1,6 +1,6 @@
 using Shared.Dto.Requests;
 using Shared.Dto.Responses;
-using Shared.Responses;
+using Shared.Results;
 
 namespace Core.Interfaces.BusinessLogic.Services;
 

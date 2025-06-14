@@ -5,7 +5,7 @@ using Core.Interfaces.DataAccess.Repositories;
 using Microsoft.Extensions.Logging;
 using Shared.Dto;
 using Shared.Enums;
-using Shared.Responses;
+using Shared.Results;
 
 namespace BusinessLogic.Services;
 

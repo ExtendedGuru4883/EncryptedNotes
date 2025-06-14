@@ -1,5 +1,4 @@
 using AutoMapper;
-using BusinessLogic.Helpers;
 using Core.Entities;
 using Core.Interfaces.BusinessLogic.Services;
 using Core.Interfaces.DataAccess.Repositories;
@@ -23,9 +22,13 @@ public class UserService(
             return ServiceResult<UserDto>.Failure("Username already exists", ServiceResponseErrorType.Conflict);
         }
 
-        if (!Base64Helper.IsValidBase64(userDto.EncryptionSaltBase64) ||
-            !Base64Helper.IsValidBase64(userDto.SignatureSaltBase64) ||
-            !Base64Helper.IsValidBase64(userDto.PublicKeyBase64))
+        try
+        {
+            _ = Convert.FromBase64String(userDto.EncryptionSaltBase64);
+            _ = Convert.FromBase64String(userDto.SignatureSaltBase64);
+            _ = Convert.FromBase64String(userDto.PublicKeyBase64);
+        }
+        catch (FormatException)
         {
             logger.LogInformation("Adding new user {username} failed: invalid base64 in request", userDto.Username);
             return ServiceResult<UserDto>.Failure(

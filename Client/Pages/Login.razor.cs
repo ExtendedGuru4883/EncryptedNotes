@@ -2,9 +2,9 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using System.Text;
 using Blazored.LocalStorage;
+using Client.Helpers.Crypto.Interfaces;
 using Client.Models;
 using Client.Services.Clients.Interfaces;
-using Client.Services.Crypto.Interfaces;
 using Shared.Dto.Requests;
 using Shared.Dto.Responses;
 
@@ -13,8 +13,8 @@ namespace Client.Pages;
 public partial class Login : ComponentBase
 {
     [Inject] public required IApiClient ApiClient { get; set; }
-    [Inject] public required ICryptoService CryptoService { get; set; }
-    [Inject] public required ISignatureService SignatureService { get; set; }
+    [Inject] public required ICryptoHelper CryptoHelper { get; set; }
+    [Inject] public required ISignatureHelper SignatureHelper { get; set; }
     [Inject] public required ILocalStorageService LocalStorageService { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
 
@@ -79,8 +79,8 @@ public partial class Login : ComponentBase
 
         var passwordBytes = Encoding.UTF8.GetBytes(_model.Password);
 
-        var keyPairBytes = SignatureService.GenerateKeyPair(passwordBytes, signatureSaltBytes, 32);
+        var keyPairBytes = SignatureHelper.GenerateKeyPair(passwordBytes, signatureSaltBytes, 32);
 
-        return Convert.ToBase64String(SignatureService.SignDetached(nonceBytes, keyPairBytes.PrivateKey));
+        return Convert.ToBase64String(SignatureHelper.SignDetached(nonceBytes, keyPairBytes.PrivateKey));
     }
 }

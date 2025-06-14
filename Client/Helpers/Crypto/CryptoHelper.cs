@@ -1,11 +1,11 @@
 using System.Runtime.Versioning;
 using BlazorSodium.Sodium;
-using Client.Services.Crypto.Interfaces;
+using Client.Helpers.Crypto.Interfaces;
 
-namespace Client.Services.Crypto;
+namespace Client.Helpers.Crypto;
 
 [SupportedOSPlatform("browser")]
-public class CryptoService : ICryptoService
+public class CryptoHelper : ICryptoHelper
 {
     public byte[] GenerateSalt(uint length)
     {

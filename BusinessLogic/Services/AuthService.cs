@@ -19,9 +19,11 @@ public class AuthService(
     public async Task<ServiceResult<ChallengeResponse>> GenerateChallenge(string username)
     {
         var signatureSalt = await userRepository.GetSignatureSaltByUsername(username);
-        if (signatureSalt is null)
+        if (string.IsNullOrEmpty(signatureSalt))
         {
-            logger.LogInformation("Retrieving signature salt for user {username} failed: user doesn't exist", username);
+            logger.LogInformation(
+                "Retrieving signature salt for user {username} failed: user doesn't exist (or potential data inconsistency)",
+                username);
             return ServiceResult<ChallengeResponse>.Failure("User not found", ServiceResponseErrorType.NotFound);
         }
 
@@ -71,7 +73,8 @@ public class AuthService(
             logger.LogError(
                 "Public ket not found for user {username}, but valid nonce was found. Potential data inconsistency.",
                 loginRequest.Username);
-            return ServiceResult<LoginResponse>.Failure("User not found", ServiceResponseErrorType.NotFound);
+            return ServiceResult<LoginResponse>.Failure("Public key not found",
+                ServiceResponseErrorType.InternalServerError);
         }
 
         try

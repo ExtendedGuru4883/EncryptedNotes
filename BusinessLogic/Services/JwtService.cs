@@ -18,6 +18,8 @@ public class JwtService(IOptions<JwtSettings> jwtSettings) : IJwtService
 
     public string GenerateToken(string username)
     {
+        var now = DateTime.UtcNow;
+        
         var claims = new Dictionary<string, object>()
         {
             [ClaimTypes.Name] = username,
@@ -28,8 +30,9 @@ public class JwtService(IOptions<JwtSettings> jwtSettings) : IJwtService
             Claims = claims,
             Issuer = _issuer,
             Audience = _audience,
-            NotBefore = DateTime.UtcNow,
-            Expires = DateTime.UtcNow.AddMinutes(_lifetimeInMinutes),
+            IssuedAt = now,
+            NotBefore = now,
+            Expires = now.AddMinutes(_lifetimeInMinutes),
             SigningCredentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256)
         };
         

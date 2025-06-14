@@ -2,7 +2,6 @@ using AutoMapper;
 using BusinessLogic.Services;
 using Test.TestHelpers;
 using Core.Interfaces.DataAccess.Repositories;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shared.Dto;
@@ -37,11 +36,7 @@ public class UserServiceTests
         var serviceResult = await _userService.AddAsync(userDto);
 
         //Assert
-        serviceResult.IsSuccess.Should().BeTrue("because the user is valid and should be added successfully");
-        serviceResult.ErrorMessage.Should().BeEmpty("because if IsSuccess is true there should be no error message");
-        serviceResult.Data.Should()
-            .BeEquivalentTo(userDto, "because in case of success the service should return the created user");
-        serviceResult.SuccessType.Should().Be(ServiceResultSuccessType.Created);
+        CommonAssertions.AssertServiceResultSuccess(serviceResult, ServiceResultSuccessType.Created);
     }
 
     [Fact]
@@ -58,11 +53,7 @@ public class UserServiceTests
         var serviceResult = await _userService.AddAsync(userDto);
 
         //Assert
-        serviceResult.IsSuccess.Should().BeFalse("because if the username already exists the user should not be added");
-        serviceResult.ErrorMessage.Should()
-            .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
-        serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
-        serviceResult.ErrorType.Should().Be(ServiceResultErrorType.Conflict);
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Conflict);
     }
 
     [Fact]
@@ -102,11 +93,6 @@ public class UserServiceTests
         var serviceResult = await _userService.AddAsync(userDto);
 
         //Assert
-        serviceResult.IsSuccess.Should()
-            .BeFalse($"because if {invalidField} is not a valid base64 the user should not be added");
-        serviceResult.ErrorMessage.Should()
-            .NotBeNullOrEmpty("because if IsSuccess is false there should be a error message");
-        serviceResult.Data.Should().BeNull("because if IsSuccess is false there should be no data");
-        serviceResult.ErrorType.Should().Be(ServiceResultErrorType.BadRequest);
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.BadRequest);
     }
 }

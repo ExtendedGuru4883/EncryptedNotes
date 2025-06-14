@@ -1,4 +1,5 @@
 using Shared.Dto;
+using Shared.Dto.Requests;
 
 namespace Test.TestHelpers;
 
@@ -32,6 +33,16 @@ public static class TestDataProvider
             SignatureSaltBase64 = GetValidBase64Value(),
             EncryptionSaltBase64 = GetValidBase64Value(),
             PublicKeyBase64 = GetValidBase64Value()
+        };
+    }
+
+    public static LoginRequest GetValidLoginRequest()
+    {
+        return new LoginRequest
+        {
+            Username = "username",
+            NonceBase64 = GetValidBase64Value(),
+            NonceSignatureBase64 = GetValidBase64Value()
         };
     }
 }

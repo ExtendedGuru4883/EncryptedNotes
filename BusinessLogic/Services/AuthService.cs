@@ -74,6 +74,8 @@ public class AuthService(
             return ServiceResult<LoginResponse>.Failure("User not found", ServiceResponseErrorType.NotFound);
         }
 
+        //Not convenient to use Base64Helper.IsValidBase64 here because it checks with the same try/catch
+        //And would double the Convert
         try
         {
             var signatureBytes = Convert.FromBase64String(loginRequest.NonceSignatureBase64);

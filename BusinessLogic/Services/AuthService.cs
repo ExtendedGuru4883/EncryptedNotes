@@ -1,3 +1,4 @@
+using BusinessLogic.Helpers.Crypto.Interfaces;
 using Core.Interfaces.BusinessLogic.Services;
 using Core.Interfaces.DataAccess.Repositories;
 using Microsoft.Extensions.Caching.Memory;
@@ -6,13 +7,14 @@ using Shared.Dto.Requests;
 using Shared.Dto.Responses;
 using Shared.Enums;
 using Shared.Responses;
-using Sodium;
 
 namespace BusinessLogic.Services;
 
 public class AuthService(
     IUserRepository userRepository,
     IJwtService jwtService,
+    ICryptoHelper cryptoHelper,
+    ISignatureHelper signatureHelper,
     IMemoryCache cache,
     ILogger<AuthService> logger) : IAuthService
 {
@@ -29,7 +31,7 @@ public class AuthService(
 
         logger.LogInformation("Retrieved signature salt for user {username}", username);
 
-        var nonce = Convert.ToBase64String(SodiumCore.GetRandomBytes(32));
+        var nonce = Convert.ToBase64String(cryptoHelper.GetRandomBytes(32));
         var challengeResponse = new ChallengeResponse()
         {
             SignatureSaltBase64 = signatureSalt,
@@ -82,7 +84,7 @@ public class AuthService(
             var signatureBytes = Convert.FromBase64String(loginRequest.NonceSignatureBase64);
             var nonceBytes = Convert.FromBase64String(loginRequest.NonceBase64);
             var publicKeyBytes = Convert.FromBase64String(publicKey);
-            if (!PublicKeyAuth.VerifyDetached(signatureBytes,
+            if (!signatureHelper.VerifyDetachedSignature(signatureBytes,
                     nonceBytes, publicKeyBytes))
             {
                 logger.LogInformation("Challenge failed by user {username}, invalid signature", loginRequest.Username);

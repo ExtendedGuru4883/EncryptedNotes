@@ -47,9 +47,21 @@ public class AuthService(
 
     public async Task<ServiceResult<LoginResponse>> Login(LoginRequest loginRequest)
     {
+        var signatureBytes = Convert.FromBase64String(loginRequest.NonceSignatureBase64);
+
+        if (signatureBytes.Length != signatureHelper.SignatureBytesSize)
+        {
+            logger.LogInformation(
+                "Login for user {username} failed with bad request: invalid signature size",
+                loginRequest.Username);
+            return ServiceResult<LoginResponse>.Failure("Challenge failed: invalid signature size",
+                ServiceResultErrorType.BadRequest);
+        }
+        
         if (!cache.TryGetValue($"nonceBase64:{loginRequest.Username}", out string? cachedNonceBase64))
         {
-            logger.LogWarning("Login for user {username} failed with unauthorized: nonce not found for user", loginRequest.Username);
+            logger.LogWarning("Login for user {username} failed with unauthorized: nonce not found for user",
+                loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge expired or invalid",
                 ServiceResultErrorType.Unauthorized);
         }
@@ -59,17 +71,21 @@ public class AuthService(
 
         if (string.IsNullOrEmpty(cachedNonceBase64))
         {
-            logger.LogError("Login for user {username} failed with internal server error: nonce is null or empty for user", loginRequest.Username);
+            logger.LogError(
+                "Login for user {username} failed with internal server error: nonce is null or empty for user",
+                loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge corrupted",
                 ServiceResultErrorType.InternalServerError);
         }
 
         if (cachedNonceBase64 != loginRequest.NonceBase64)
         {
-            logger.LogWarning("Login for user {username} failed with unauthorized: nonce for user is valid but request nonce is different",
+            logger.LogWarning(
+                "Login for user {username} failed with unauthorized: nonce for user is valid but request nonce is different",
                 loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge invalid", ServiceResultErrorType.Unauthorized);
         }
+
         logger.LogInformation("Nonce for user {username} is valid and matched request nonce", loginRequest.Username);
 
         var userEntity = await userRepository.GetByUsernameAsNoTrackingAsync(loginRequest.Username);
@@ -87,25 +103,20 @@ public class AuthService(
             return ServiceResult<LoginResponse>.Failure("User not found",
                 ServiceResultErrorType.InternalServerError);
         }
+
         logger.LogInformation("Successfully retrieved user {username} from database", loginRequest.Username);
+
+        var nonceBytes = Convert.FromBase64String(cachedNonceBase64);
+        var publicKeyBytes = Convert.FromBase64String(userEntity.PublicKeyBase64);
         
-        try
+        if (!signatureHelper.VerifyDetachedSignature(signatureBytes,
+                nonceBytes, publicKeyBytes))
         {
-            var signatureBytes = Convert.FromBase64String(loginRequest.NonceSignatureBase64);
-            var nonceBytes = Convert.FromBase64String(cachedNonceBase64);
-            var publicKeyBytes = Convert.FromBase64String(userEntity.PublicKeyBase64);
-            if (!signatureHelper.VerifyDetachedSignature(signatureBytes,
-                    nonceBytes, publicKeyBytes))
-            {
-                logger.LogInformation("Login for user {username} failed with unauthorized: challenge failed, invalid signature", loginRequest.Username);
-                return ServiceResult<LoginResponse>.Failure("Challenge failed: invalid signature",
-                    ServiceResultErrorType.Unauthorized);
-            }
-        }
-        catch (FormatException ex)
-        {
-            logger.LogWarning(ex, "Login for user {username} failed with bad request: invalid Base64 format in login request", loginRequest.Username);
-            return ServiceResult<LoginResponse>.Failure("Invalid input format", ServiceResultErrorType.BadRequest);
+            logger.LogInformation(
+                "Login for user {username} failed with unauthorized: challenge failed, invalid signature",
+                loginRequest.Username);
+            return ServiceResult<LoginResponse>.Failure("Challenge failed: invalid signature",
+                ServiceResultErrorType.Unauthorized);
         }
 
         logger.LogInformation("Challenge completed by user {username}", loginRequest.Username);

@@ -1,4 +1,5 @@
 using AutoMapper;
+using BusinessLogic.Helpers.Crypto.Interfaces;
 using BusinessLogic.Services;
 using Core.Abstractions.DataAccess.Repositories;
 using Test.TestHelpers;
@@ -12,6 +13,7 @@ namespace Test.Unit.BusinessLogic.Services;
 public class UserServiceTests
 {
     private readonly Mock<IUserRepository> _mockUserRepository = new();
+    private readonly Mock<ISignatureHelper> _mockSignatureHelper = new();
     private readonly Mock<IMapper> _mockMapper = new();
     private readonly Mock<ILogger<UserService>> _mockLogger = new();
 
@@ -19,7 +21,7 @@ public class UserServiceTests
 
     public UserServiceTests()
     {
-        _userService = new UserService(_mockUserRepository.Object, _mockMapper.Object, _mockLogger.Object);
+        _userService = new UserService(_mockUserRepository.Object, _mockSignatureHelper.Object,_mockMapper.Object, _mockLogger.Object);
     }
 
     [Fact]
@@ -29,6 +31,8 @@ public class UserServiceTests
         var userDto = TestDataProvider.GetUserDto();
 
         //Mock
+        _mockSignatureHelper.Setup(s => s.PublicKeyBytesSize)
+            .Returns((Convert.FromBase64String(userDto.PublicKeyBase64).Length));
         _mockUserRepository.Setup(r => r.UsernameExists(It.IsAny<string>()))
             .ReturnsAsync(false);
 
@@ -46,6 +50,8 @@ public class UserServiceTests
         var userDto = TestDataProvider.GetUserDto();
 
         //Mock
+        _mockSignatureHelper.Setup(s => s.PublicKeyBytesSize)
+            .Returns((Convert.FromBase64String(userDto.PublicKeyBase64).Length));
         _mockUserRepository.Setup(r => r.UsernameExists(It.IsAny<string>()))
             .ReturnsAsync(true); //Mocking username already existing
 
@@ -57,37 +63,14 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task AddAsync_InvalidSignatureSaltBase64_ReturnsFailureBadRequest() =>
-        await AddAsync_InvalidBase64Field_ReturnsFailureBadRequest(nameof(UserDto.SignatureSaltBase64));
-
-    [Fact]
-    public async Task AddAsync_InvalidEncryptionSaltBase64_ReturnsFailureBadRequest() =>
-        await AddAsync_InvalidBase64Field_ReturnsFailureBadRequest(nameof(UserDto.EncryptionSaltBase64));
-
-    [Fact]
-    public async Task AddAsync_InvalidPublicKeyBase64_ReturnsFailureBadRequest() =>
-        await AddAsync_InvalidBase64Field_ReturnsFailureBadRequest(nameof(UserDto.PublicKeyBase64));
-
-    private async Task AddAsync_InvalidBase64Field_ReturnsFailureBadRequest(string invalidField)
+    public async Task AddAsync_InvalidPublicKeyLength_ReturnsFailureBadRequest()
     {
         //Arrange
-        var userDto = new UserDto
-        {
-            Username = "test-username",
-            SignatureSaltBase64 = nameof(UserDto.SignatureSaltBase64) == invalidField
-                ? TestDataProvider.GetInvalidBase64Value()
-                : TestDataProvider.GetValidBase64Value(),
-            EncryptionSaltBase64 = nameof(UserDto.EncryptionSaltBase64) == invalidField
-                ? TestDataProvider.GetInvalidBase64Value()
-                : TestDataProvider.GetValidBase64Value(),
-            PublicKeyBase64 = nameof(UserDto.PublicKeyBase64) == invalidField
-                ? TestDataProvider.GetInvalidBase64Value()
-                : TestDataProvider.GetValidBase64Value()
-        };
+        var userDto = TestDataProvider.GetUserDto();
 
         //Mock
-        _mockUserRepository.Setup(r => r.UsernameExists(It.IsAny<string>()))
-            .ReturnsAsync(false);
+        _mockSignatureHelper.Setup(s => s.PublicKeyBytesSize)
+            .Returns((Convert.FromBase64String(userDto.PublicKeyBase64).Length + 1));
 
         //Act
         var serviceResult = await _userService.AddAsync(userDto);

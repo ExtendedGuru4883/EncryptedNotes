@@ -1,3 +1,4 @@
 - Enforce maximum length for note content and title
 - Enforce maximum length and allowed characters for username
 - Introduce pagination in note retrieval
+- Make NoteService.GetAllForCurrentUser return OK and empty list instead of not found in case of no notes

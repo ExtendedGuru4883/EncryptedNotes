@@ -54,21 +54,7 @@ public class NoteService(
             return ServiceResult<NoteDto>.Failure("You need to be logged in to add a note",
                 ServiceResultErrorType.Unauthorized);
         }
-
-        try
-        {
-            _ = Convert.FromBase64String(noteDto.EncryptedTitleBase64);
-            _ = Convert.FromBase64String(noteDto.EncryptedContentBase64);
-        }
-        catch (FormatException)
-        {
-            logger.LogInformation("Adding note for current user {currentUserId} failed with bad request: invalid base64 in request", currentUserId);
-            return ServiceResult<NoteDto>.Failure(
-                "EncryptedTitleBase64 and EncryptedContentBase64 must be valid base64 strings",
-                ServiceResultErrorType.BadRequest);
-        }
-
-
+        
         var noteEntity = mapper.Map<NoteEntity>(noteDto);
         noteEntity.UserId = Guid.Parse(currentUserId);
         await noteRepository.AddAsync(noteEntity);

@@ -74,6 +74,9 @@ public class AuthServiceTests
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
 
+        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
+            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
+
         _mockUserRepository.Setup(r => r.GetByUsernameAsNoTrackingAsync(It.IsAny<string>()))
             .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
 
@@ -87,7 +90,7 @@ public class AuthServiceTests
         //Assert
         CommonAssertions.AssertServiceResultSuccess(serviceResult, ServiceResultSuccessType.Ok);
     }
-    
+
     [Fact]
     public async Task Login_UserNotFound_ReturnsFailureInternalServerError()
     {
@@ -97,7 +100,10 @@ public class AuthServiceTests
         //Mock
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
-        
+
+        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
+            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
+
         _mockUserRepository.Setup(r => r.GetByUsernameAsNoTrackingAsync(It.IsAny<string>()))
             .ReturnsAsync(null as UserEntity); //Mocking unsuccessful user retrieval
 
@@ -107,7 +113,7 @@ public class AuthServiceTests
         //Assert
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.InternalServerError);
     }
-    
+
     [Fact]
     public async Task Login_InvalidSignature_ReturnsFailureUnauthorized()
     {
@@ -117,6 +123,9 @@ public class AuthServiceTests
         //Mock
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
+
+        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
+            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
 
         _mockUserRepository.Setup(r => r.GetByUsernameAsNoTrackingAsync(It.IsAny<string>()))
             .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
@@ -139,9 +148,11 @@ public class AuthServiceTests
         var loginRequest = TestDataProvider.GetValidLoginRequest();
 
         //Mock
+
+        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
+            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
+
         //Not setting the nonce in cache here means the service won't find it.
-        //Attempt to retrieve nonce from cache should be the first thing done by the service. If it can't be found
-        //The challenge should fail immediately, so nothing else needs to be mocked here
 
         //Act
         var serviceResult = await _authService.Login(loginRequest);
@@ -149,7 +160,7 @@ public class AuthServiceTests
         //Assert
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
     }
-    
+
     [Fact]
     public async Task Login_RequestNonceNotEqualToCached_ReturnsFailureUnauthorized()
     {
@@ -157,10 +168,13 @@ public class AuthServiceTests
         var loginRequest = TestDataProvider.GetValidLoginRequest();
 
         //Mock
+
+        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
+            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
+
         //Setting nonce in cache for successful retrieval during service execution, with value not equal to request nonce
-        _realCache.Set($"nonceBase64:{loginRequest.Username}", TestDataProvider.GetRandomValidBase64(), TimeSpan.FromMinutes(2));
-        //Checking that the request nonce is the same as the cached nonce should be the first thing done after retrieving
-        //The nonce from cache. If they aren't equal the challenge should fail immediately, so nothing else needs to be mocked here
+        _realCache.Set($"nonceBase64:{loginRequest.Username}", TestDataProvider.GetRandomValidBase64(),
+            TimeSpan.FromMinutes(2));
 
         //Act
         var serviceResult = await _authService.Login(loginRequest);
@@ -168,24 +182,20 @@ public class AuthServiceTests
         //Assert
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
     }
-    
+
     [Fact]
-    public async Task Login_InvalidBase64RequestSignature_ReturnsFailureBadRequest()
+    public async Task Login_InvalidSignatureLength_ReturnsFailureBadRequest()
     {
-        //Arrange
+//Arrange
         var loginRequest = TestDataProvider.GetValidLoginRequest();
-        loginRequest.NonceSignatureBase64 = TestDataProvider.GetInvalidBase64Value();
 
         //Mock
-        //Setting nonce in cache for successful retrieval during service execution
-        _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
-        
-        _mockUserRepository.Setup(r => r.GetByUsernameAsNoTrackingAsync(It.IsAny<string>()))
-            .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
+        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
+            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length + 1));
 
         //Act
         var serviceResult = await _authService.Login(loginRequest);
-        
+
         //Assert
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.BadRequest);
     }

@@ -1,5 +1,4 @@
-using System.Runtime.Versioning;
-using Blazored.LocalStorage;
+using Blazored.SessionStorage;
 using BlazorSodium.Extensions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -22,6 +21,6 @@ builder.Services.AddScoped<ICryptoHelper, CryptoHelper>();
 #pragma warning restore CA1416
 
 builder.Services.AddBlazorSodium();
-builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddBlazoredSessionStorage();
 
 await builder.Build().RunAsync();

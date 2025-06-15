@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Blazored.LocalStorage;
+using Blazored.SessionStorage;
 using Client.Models;
 using Client.Services.Clients.Interfaces;
 using Microsoft.AspNetCore.Components;
@@ -12,14 +12,14 @@ namespace Client.Services.Clients;
 
 public class ApiClient(
     HttpClient httpClient,
-    ILocalStorageService localStorageService,
+    ISessionStorageService sessionStorageService,
     NavigationManager navigationManager) : IApiClient
 {
     private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, bool withAuth)
     {
         if (!withAuth) return await httpClient.SendAsync(request);
 
-        var token = await localStorageService.GetItemAsStringAsync("token");
+        var token = await sessionStorageService.GetItemAsStringAsync("token");
 
         if (!string.IsNullOrEmpty(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);

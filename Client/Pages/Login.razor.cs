@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using System.Text;
-using Blazored.LocalStorage;
+using Blazored.SessionStorage;
 using Client.Helpers.Crypto.Interfaces;
 using Client.Models;
 using Client.Services.Clients.Interfaces;
@@ -15,13 +15,12 @@ public partial class Login : ComponentBase
     [Inject] public required IApiClient ApiClient { get; set; }
     [Inject] public required ICryptoHelper CryptoHelper { get; set; }
     [Inject] public required ISignatureHelper SignatureHelper { get; set; }
-    [Inject] public required ILocalStorageService LocalStorageService { get; set; }
+    [Inject] public required ISessionStorageService SessionStorageService { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
 
     private readonly LoginFormModel _model = new();
-    private List<string> _errors = [];
-    private bool _isLoading = false;
-
+    private readonly List<string> _errors = [];
+    private bool _isLoading;
 
     private async Task SubmitAsync()
     {
@@ -51,9 +50,16 @@ public partial class Login : ComponentBase
 
                 if (apiLoginResponse is { IsSuccess: true, Data: not null })
                 {
-                    await LocalStorageService.SetItemAsStringAsync("token",
+                    await SessionStorageService.SetItemAsStringAsync("token",
                         apiLoginResponse.Data.Token);
 
+                    var encryptionKeyBytes = CryptoHelper.DeriveEncryptionKey(
+                        Encoding.UTF8.GetBytes(_model.Password),
+                        Convert.FromBase64String(apiLoginResponse.Data.EncryptionSaltBase64), 32);
+                    var encryptionKeyBase64 = Convert.ToBase64String(encryptionKeyBytes);
+                    
+                    await SessionStorageService.SetItemAsStringAsync("encryptionKeyBase64",  encryptionKeyBase64);
+                    
                     NavigationManager.NavigateTo("/");
                     return;
                 }

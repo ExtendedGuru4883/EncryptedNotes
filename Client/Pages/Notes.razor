@@ -1,0 +1,9 @@
+@page "/Notes"
+<h3>Notes</h3>
+
+@foreach (var note in _notes)
+{
+    <div>Title: @note.Title</div>
+    <div>Content: @note.Content</div>
+    <div>Timestamp: @note.TimeStamp</div>
+}

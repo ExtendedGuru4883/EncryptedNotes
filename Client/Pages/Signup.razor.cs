@@ -16,8 +16,8 @@ public partial class Signup : ComponentBase
     [Inject] public required NavigationManager NavigationManager { get; set; }
 
     private readonly SignupFormModel _model = new();
-    private List<string> _errors = [];
-    private bool _isLoading = false;
+    private readonly List<string> _errors = [];
+    private bool _isLoading;
 
     private async Task Submit()
     {

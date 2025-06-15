@@ -7,7 +7,6 @@ using Core.Entities;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Shared.Dto;
 using Shared.Enums;
 using Test.TestHelpers;
 
@@ -48,24 +47,6 @@ public class NoteServiceTests
 
         //Assert
         CommonAssertions.AssertServiceResultSuccess(serviceResult, ServiceResultSuccessType.Ok);
-    }
-
-    [Fact]
-    public async Task GetAllForCurrentUser_ListEmptyAuth_ReturnsFailureNotFound()
-    {
-        //Arrange
-        var currentUserId = Guid.NewGuid().ToString();
-
-        //Mock
-        _mockCurrentUserService.Setup(c => c.UserId).Returns(currentUserId);
-        _mockNoteRepository.Setup(n => n.GetAllByUserIdAsNoTrackingAsync(It.IsAny<Guid>()))
-            .ReturnsAsync([]);
-
-        //Act
-        var serviceResult = await _noteService.GetAllForCurrentUser();
-
-        //Assert
-        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.NotFound);
     }
 
     [Fact]

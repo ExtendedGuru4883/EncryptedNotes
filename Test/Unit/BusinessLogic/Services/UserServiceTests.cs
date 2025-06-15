@@ -5,7 +5,6 @@ using Core.Abstractions.DataAccess.Repositories;
 using Test.TestHelpers;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Shared.Dto;
 using Shared.Enums;
 
 namespace Test.Unit.BusinessLogic.Services;

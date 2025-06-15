@@ -1,9 +1,5 @@
-using System.Net;
 using EncryptedNotes.Helpers;
-using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
 using Shared.Dto.Responses;
 using Shared.Enums;

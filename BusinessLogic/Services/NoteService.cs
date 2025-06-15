@@ -30,15 +30,6 @@ public class NoteService(
 
         var notes = await noteRepository.GetAllByUserIdAsNoTrackingAsync(Guid.Parse(currentUserId));
 
-        if (notes.Count == 0)
-        {
-            logger.LogInformation(
-                "Getting notes for current user {currentUserId} failed with not found: current user has no notes",
-                currentUserId);
-            return ServiceResult<List<NoteDto>>.Failure("No notes found for the authenticated user",
-                ServiceResultErrorType.NotFound);
-        }
-
         logger.LogInformation("Getting notes for current user {currentUserId} succeeded", currentUserId);
         return ServiceResult<List<NoteDto>>.SuccessOk(mapper.Map<List<NoteDto>>(notes));
     }

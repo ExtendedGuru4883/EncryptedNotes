@@ -7,7 +7,6 @@ using Client.Services.Clients.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Shared.Dto;
 using Shared.Dto.Requests;
-using Shared.Dto.Responses;
 
 namespace Client.Pages;
 

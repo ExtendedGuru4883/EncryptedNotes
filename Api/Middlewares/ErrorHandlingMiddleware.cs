@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using Shared.Dto.Responses;
 
 namespace EncryptedNotes.Middlewares;

@@ -1,6 +1,4 @@
-using System.Net;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Enums;
 using Shared.Results;

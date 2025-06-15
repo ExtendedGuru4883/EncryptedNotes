@@ -21,6 +21,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
+builder.Services.AddHttpContextAccessor();
+
 //Cache
 builder.Services.AddMemoryCache();
 
@@ -36,22 +38,25 @@ builder.Services.AddAutoMapper(typeof(BusinessLogicMappingProfile), typeof(ApiMa
 //Repository
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-//Service
+//Service BusinessLogic
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+//Service Infrastructure
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddSingleton<IJwtService, JwtService>();
 
 //Helper
 builder.Services.AddSingleton<ICryptoHelper, CryptoHelper>();
 builder.Services.AddSingleton<ISignatureHelper, SignatureHelper>();
 
-//JWT
+//Configurazione JWT
 var jwtSettingsConfigurationSection = builder.Configuration.GetSection("JwtSettings");
 builder.Services
     .AddOptions<JwtSettings>()
     .Bind(jwtSettingsConfigurationSection)
     .ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddSingleton<IJwtService, JwtService>();
 
 var jwtSettings = jwtSettingsConfigurationSection.Get<JwtSettings>();
 ArgumentNullException.ThrowIfNull(jwtSettings);

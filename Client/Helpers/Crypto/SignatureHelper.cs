@@ -8,10 +8,10 @@ namespace Client.Helpers.Crypto;
 [SupportedOSPlatform("browser")]
 public class SignatureHelper : ISignatureHelper
 {
-    public Ed25519KeyPair GenerateKeyPair(byte[] passwordBytes, byte[] saltBytes, uint keyLength)
+    public Ed25519KeyPair GenerateKeyPair(byte[] passwordBytes, byte[] saltBytes)
     {
         var seed = PasswordHash.Crypto_PwHash(
-            keyLength,
+            PublicKeySignature.SEED_BYTES,
             passwordBytes,
             saltBytes,
             PasswordHash.OPSLIMIT_MODERATE,

@@ -1,0 +1,3 @@
+- Enforce maximum length for note content and title
+- Enforce maximum length and allowed characters for username
+- Introduce pagination in note retrieval

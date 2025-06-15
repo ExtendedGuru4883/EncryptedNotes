@@ -55,7 +55,7 @@ public partial class Login : ComponentBase
 
                     var encryptionKeyBytes = CryptoHelper.DeriveEncryptionKey(
                         Encoding.UTF8.GetBytes(_model.Password),
-                        Convert.FromBase64String(apiLoginResponse.Data.EncryptionSaltBase64), 32);
+                        Convert.FromBase64String(apiLoginResponse.Data.EncryptionSaltBase64));
                     var encryptionKeyBase64 = Convert.ToBase64String(encryptionKeyBytes);
                     
                     await SessionStorageService.SetItemAsStringAsync("encryptionKeyBase64",  encryptionKeyBase64);
@@ -85,7 +85,7 @@ public partial class Login : ComponentBase
 
         var passwordBytes = Encoding.UTF8.GetBytes(_model.Password);
 
-        var keyPairBytes = SignatureHelper.GenerateKeyPair(passwordBytes, signatureSaltBytes, 32);
+        var keyPairBytes = SignatureHelper.GenerateKeyPair(passwordBytes, signatureSaltBytes);
 
         return Convert.ToBase64String(SignatureHelper.SignDetached(nonceBytes, keyPairBytes.PrivateKey));
     }

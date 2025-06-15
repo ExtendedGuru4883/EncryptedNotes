@@ -45,15 +45,15 @@ public partial class Signup : ComponentBase
     private SignupRequest GenerateSignupRequest()
     {
         var passwordBytes = Encoding.UTF8.GetBytes(_model.Password);
-        var signatureSaltBytes = CryptoHelper.GenerateSalt(16);
+        var signatureSaltBytes = CryptoHelper.GenerateSalt();
 
-        var keyPairBytes = SignatureHelper.GenerateKeyPair(passwordBytes, signatureSaltBytes, 32);
+        var keyPairBytes = SignatureHelper.GenerateKeyPair(passwordBytes, signatureSaltBytes);
 
         return new SignupRequest()
         {
             Username = _model.Username,
             SignatureSaltBase64 = Convert.ToBase64String(signatureSaltBytes),
-            EncryptionSaltBase64 = Convert.ToBase64String(CryptoHelper.GenerateSalt(16)),
+            EncryptionSaltBase64 = Convert.ToBase64String(CryptoHelper.GenerateSalt()),
             PublicKeyBase64 = Convert.ToBase64String(keyPairBytes.PublicKey)
         };
     }

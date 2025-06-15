@@ -4,6 +4,6 @@ namespace Client.Helpers.Crypto.Interfaces;
 
 public interface ISignatureHelper
 {
-    Ed25519KeyPair GenerateKeyPair(byte[] passwordBytes, byte[] saltBytes, uint length);
+    Ed25519KeyPair GenerateKeyPair(byte[] passwordBytes, byte[] saltBytes);
     byte[] SignDetached(byte[] messageBytes, byte[] privateKeyBytes);
 }

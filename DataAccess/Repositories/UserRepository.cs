@@ -34,22 +34,4 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
             .Select(u => u.SignatureSaltBase64)
             .FirstOrDefaultAsync();
     }
-
-    public async Task<string?> GetEncryptionSaltByUsername(string username)
-    {
-        return await dbContext.Users
-            .AsNoTracking()
-            .Where(u => u.Username == username)
-            .Select(u => u.EncryptionSaltBase64)
-            .FirstOrDefaultAsync();
-    }
-
-    public async Task<string?> GetPublicKeyByUsername(string username)
-    {
-        return await dbContext.Users
-            .AsNoTracking()
-            .Where(u => u.Username == username)
-            .Select(u => u.PublicKeyBase64)
-            .FirstOrDefaultAsync();
-    }
 }

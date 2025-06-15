@@ -9,5 +9,7 @@ public class ApiMappingProfile : Profile
     public ApiMappingProfile()
     {
         CreateMap<SignupRequest, UserDto>();
+        
+        CreateMap<AddNoteRequest, NoteDto>();
     }
 }

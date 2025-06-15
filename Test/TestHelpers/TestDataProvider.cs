@@ -57,7 +57,6 @@ public static class TestDataProvider
             Id = Guid.NewGuid(),
             EncryptedTitleBase64 = GetValidBase64Value(),
             EncryptedContentBase64 = GetValidBase64Value(),
-            TimeStamp = DateTime.UtcNow,
             UserId = userId,
 
         };

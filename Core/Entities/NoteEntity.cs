@@ -6,16 +6,16 @@ namespace Core.Entities;
 public class NoteEntity : BaseEntity
 {
     [Required]
-    public required string EncryptedTitleBase64 { get; set; }
+    public required string EncryptedTitleBase64 { get; init; }
     [Required]
-    public required string EncryptedContentBase64 { get; set; }
+    public required string EncryptedContentBase64 { get; init; }
     [Required]
-    public required DateTime TimeStamp { get; set; }
+    public DateTime TimeStamp { get; init; } = DateTime.UtcNow;
     
     //Foreign keys
     [Required]
-    public required Guid UserId { get; set; }
+    public required Guid UserId { get; init; }
     
     //Navigation properties
-    public virtual UserEntity? User { get; set; }
+    public virtual UserEntity? User { get; init; }
 }

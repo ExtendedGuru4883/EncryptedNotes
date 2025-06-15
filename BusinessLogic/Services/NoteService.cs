@@ -72,8 +72,8 @@ public class NoteService(
         var noteEntity = mapper.Map<NoteEntity>(noteDto);
         noteEntity.UserId = Guid.Parse(currentUserId);
         await noteRepository.AddAsync(noteEntity);
-        
+
         logger.LogInformation("Adding note for current user {currentUserId} succeeded", currentUserId);
-        return ServiceResult<NoteDto>.Success(noteDto, ServiceResultSuccessType.Created);
+        return ServiceResult<NoteDto>.Success(mapper.Map<NoteDto>(noteEntity), ServiceResultSuccessType.Created);
     }
 }

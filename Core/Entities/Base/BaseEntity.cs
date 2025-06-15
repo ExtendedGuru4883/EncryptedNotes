@@ -7,5 +7,5 @@ public class BaseEntity
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public required Guid Id { get; init; }
+    public required Guid Id { get; set; }
 }

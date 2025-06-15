@@ -3,6 +3,8 @@ using BusinessLogic.Mapping;
 using BusinessLogic.Services;
 using Core.Abstractions.DataAccess.Repositories;
 using Core.Abstractions.Infrastructure;
+using Core.Entities;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shared.Dto;
@@ -89,11 +91,16 @@ public class NoteServiceTests
         //Mock
         _mockCurrentUserService.Setup(c => c.UserId)
             .Returns(currentUserId.ToString);
+        _mockNoteRepository.Setup(n => n.AddAsync(It.IsAny<NoteEntity>())).Callback<NoteEntity>(e =>
+        {
+            e.Id = Guid.NewGuid();
+        });
 
         //Act
         var serviceResult = await _noteService.AddAsyncToCurrentUser(noteDto);
 
         //Assert
+        serviceResult.Data?.Id.Should().NotBeEmpty();
         CommonAssertions.AssertServiceResultSuccess(serviceResult, ServiceResultSuccessType.Created);
     }
     

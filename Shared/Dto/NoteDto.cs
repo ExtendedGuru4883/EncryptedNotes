@@ -4,6 +4,7 @@ namespace Shared.Dto;
 
 public class NoteDto
 {
+    public Guid Id { get; init; }
     [Required]
     public required string EncryptedTitleBase64 { get; init; }
     [Required]

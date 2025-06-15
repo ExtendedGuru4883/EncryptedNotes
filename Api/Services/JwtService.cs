@@ -1,12 +1,12 @@
 using System.Security.Claims;
 using System.Text;
-using BusinessLogic.Configurations;
-using Core.Interfaces.BusinessLogic.Services;
+using Core.Interfaces.Infrastructure;
+using EncryptedNotes.Configurations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace BusinessLogic.Services;
+namespace EncryptedNotes.Services;
 
 public class JwtService(IOptions<JwtSettings> jwtSettings) : IJwtService
 {

@@ -1,4 +1,4 @@
-namespace Core.Interfaces.BusinessLogic.Services;
+namespace Core.Interfaces.Infrastructure;
 
 public interface IJwtService
 {

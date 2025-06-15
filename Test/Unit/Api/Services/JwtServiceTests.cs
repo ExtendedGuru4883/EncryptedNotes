@@ -1,11 +1,11 @@
 using System.Security.Claims;
-using BusinessLogic.Configurations;
-using BusinessLogic.Services;
+using EncryptedNotes.Configurations;
+using EncryptedNotes.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace Test.Unit.BusinessLogic.Services;
+namespace Test.Unit.Api.Services;
 
 public class JwtServiceTests
 {

@@ -50,6 +50,15 @@ public static class TestDataProvider
         };
     }
     
+    public static NoteDto GetNoteDto(Guid userId)
+    {
+        return new NoteDto
+        {
+            EncryptedTitleBase64 = GetValidBase64Value(),
+            EncryptedContentBase64 = GetValidBase64Value(),
+        };
+    }
+    
     public static NoteEntity GetNoteEntity(Guid userId)
     {
         return new NoteEntity

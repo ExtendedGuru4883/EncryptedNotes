@@ -5,6 +5,7 @@ using Core.Abstractions.DataAccess.Repositories;
 using Core.Abstractions.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Shared.Dto;
 using Shared.Enums;
 using Test.TestHelpers;
 
@@ -30,7 +31,7 @@ public class NoteServiceTests
     }
 
     [Fact]
-    public async Task GetAllForCurrentUser_CurrentUserIdNotNullListNotEmpty_Returns200OK()
+    public async Task GetAllForCurrentUser_ListNotEmptyAuth_ReturnsSuccessOK()
     {
         //Arrange
         var currentUserId = Guid.NewGuid().ToString();
@@ -48,7 +49,7 @@ public class NoteServiceTests
     }
 
     [Fact]
-    public async Task GetAllForCurrentUser_CurrentUserIdNotNullListEmpty_Returns404NotFound()
+    public async Task GetAllForCurrentUser_ListEmptyAuth_ReturnsFailureNotFound()
     {
         //Arrange
         var currentUserId = Guid.NewGuid().ToString();
@@ -66,7 +67,7 @@ public class NoteServiceTests
     }
 
     [Fact]
-    public async Task GetAllForCurrentUser_CurrentUserIdNull_Returns401Unauthorized()
+    public async Task GetAllForCurrentUser_NotAuth_ReturnsFailureUnauthorized()
     {
         //Mock
         _mockCurrentUserService.Setup(c => c.UserId).Returns(null as string);
@@ -76,5 +77,73 @@ public class NoteServiceTests
 
         //Assert
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
+    }
+
+    [Fact]
+    public async Task AddAsync_ValidNoteAuth_ReturnsSuccessCreated()
+    {
+        //Arrange
+        var currentUserId = Guid.NewGuid();
+        var noteDto = TestDataProvider.GetNoteDto(currentUserId);
+
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId)
+            .Returns(currentUserId.ToString);
+
+        //Act
+        var serviceResult = await _noteService.AddAsyncToCurrentUser(noteDto);
+
+        //Assert
+        CommonAssertions.AssertServiceResultSuccess(serviceResult, ServiceResultSuccessType.Created);
+    }
+    
+    [Fact]
+    public async Task AddAsync_NotAuth_ReturnsFailureUnauthorized()
+    {
+        //Arrange
+        var noteDto = TestDataProvider.GetNoteDto(Guid.NewGuid());
+
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId)
+            .Returns(null as string);
+
+        //Act
+        var serviceResult = await _noteService.AddAsyncToCurrentUser(noteDto);
+
+        //Assert
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
+    }
+
+    [Fact]
+    public async Task AddAsync_InvalidEncryptedTitleBase64Auth_ReturnsFailureBadRequest() =>
+        await AddAsync_InvalidBase64FieldAuth_ReturnsFailureBadRequest(nameof(NoteDto.EncryptedTitleBase64));
+    
+    [Fact]
+    public async Task AddAsync_InvalidEncryptedContentBase64Auth_ReturnsFailureBadRequest() =>
+        await AddAsync_InvalidBase64FieldAuth_ReturnsFailureBadRequest(nameof(NoteDto.EncryptedContentBase64));
+    
+    private async Task AddAsync_InvalidBase64FieldAuth_ReturnsFailureBadRequest(string invalidField)
+    {
+        //Arrange
+        var currentUserId = Guid.NewGuid();
+        var noteDto = new NoteDto
+        {
+            EncryptedTitleBase64 = nameof(NoteDto.EncryptedTitleBase64) == invalidField
+                ? TestDataProvider.GetInvalidBase64Value()
+                : TestDataProvider.GetValidBase64Value(),
+            EncryptedContentBase64 = nameof(NoteDto.EncryptedContentBase64) == invalidField
+                ? TestDataProvider.GetInvalidBase64Value()
+                : TestDataProvider.GetValidBase64Value(),
+        };
+
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId)
+            .Returns(currentUserId.ToString);
+
+        //Act
+        var serviceResult = await _noteService.AddAsyncToCurrentUser(noteDto);
+
+        //Assert
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.BadRequest);
     }
 }

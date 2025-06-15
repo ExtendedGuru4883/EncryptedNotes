@@ -40,7 +40,7 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task AddAsync_UsernameExists_ReturnsConflictFailure()
+    public async Task AddAsync_UsernameExists_ReturnsFailureConflict()
     {
         //Arrange
         var userDto = TestDataProvider.GetUserDto();
@@ -57,18 +57,18 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task AddAsync_InvalidSignatureSaltBase64_ReturnsBadRequestFailure() =>
-        await AddAsync_InvalidBase64Field_ReturnsBadRequestFailure(nameof(UserDto.SignatureSaltBase64));
+    public async Task AddAsync_InvalidSignatureSaltBase64_ReturnsFailureBadRequest() =>
+        await AddAsync_InvalidBase64Field_ReturnsFailureBadRequest(nameof(UserDto.SignatureSaltBase64));
 
     [Fact]
-    public async Task AddAsync_InvalidEncryptionSaltBase64_ReturnsBadRequestFailure() =>
-        await AddAsync_InvalidBase64Field_ReturnsBadRequestFailure(nameof(UserDto.EncryptionSaltBase64));
+    public async Task AddAsync_InvalidEncryptionSaltBase64_ReturnsFailureBadRequest() =>
+        await AddAsync_InvalidBase64Field_ReturnsFailureBadRequest(nameof(UserDto.EncryptionSaltBase64));
 
     [Fact]
-    public async Task AddAsync_InvalidPublicKeyBase64_ReturnsBadRequestFailure() =>
-        await AddAsync_InvalidBase64Field_ReturnsBadRequestFailure(nameof(UserDto.PublicKeyBase64));
+    public async Task AddAsync_InvalidPublicKeyBase64_ReturnsFailureBadRequest() =>
+        await AddAsync_InvalidBase64Field_ReturnsFailureBadRequest(nameof(UserDto.PublicKeyBase64));
 
-    private async Task AddAsync_InvalidBase64Field_ReturnsBadRequestFailure(string invalidField)
+    private async Task AddAsync_InvalidBase64Field_ReturnsFailureBadRequest(string invalidField)
     {
         //Arrange
         var userDto = new UserDto

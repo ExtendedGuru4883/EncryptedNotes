@@ -13,4 +13,11 @@ public class NoteRepository(AppDbContext dbContext) : INoteRepository
             .Where(n => n.UserId == userId)
             .ToListAsync();
     }
+
+    public async Task<NoteEntity> AddAsync(NoteEntity note)
+    {
+        var entityEntry = await dbContext.Notes.AddAsync(note);
+        await dbContext.SaveChangesAsync();
+        return entityEntry.Entity;
+    }
 }

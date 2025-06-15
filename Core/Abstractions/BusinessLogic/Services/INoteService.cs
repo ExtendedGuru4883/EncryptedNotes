@@ -5,5 +5,6 @@ namespace Core.Abstractions.BusinessLogic.Services;
 
 public interface INoteService
 {
-    public Task<ServiceResult<List<NoteDto>>> GetAllForCurrentUser();
+    Task<ServiceResult<List<NoteDto>>> GetAllForCurrentUser();
+    Task<ServiceResult<NoteDto>> AddAsyncToCurrentUser(NoteDto noteDto);
 }

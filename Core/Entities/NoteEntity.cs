@@ -14,7 +14,7 @@ public class NoteEntity : BaseEntity
     
     //Foreign keys
     [Required]
-    public required Guid UserId { get; init; }
+    public required Guid UserId { get; set; }
     
     //Navigation properties
     public virtual UserEntity? User { get; init; }

@@ -1,7 +1,7 @@
 using BusinessLogic.Helpers.Crypto.Interfaces;
-using Core.Interfaces.BusinessLogic.Services;
-using Core.Interfaces.DataAccess.Repositories;
-using Core.Interfaces.Infrastructure;
+using Core.Abstractions.BusinessLogic.Services;
+using Core.Abstractions.DataAccess.Repositories;
+using Core.Abstractions.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Shared.Dto.Requests;

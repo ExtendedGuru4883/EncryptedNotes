@@ -1,7 +1,7 @@
 using Shared.Dto;
 using Shared.Results;
 
-namespace Core.Interfaces.BusinessLogic.Services;
+namespace Core.Abstractions.BusinessLogic.Services;
 
 public interface IUserService
 {

@@ -1,5 +1,5 @@
+using Core.Abstractions.DataAccess.Repositories;
 using Core.Entities;
-using Core.Interfaces.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repositories;

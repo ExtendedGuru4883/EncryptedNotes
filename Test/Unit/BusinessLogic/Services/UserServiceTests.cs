@@ -1,7 +1,7 @@
 using AutoMapper;
 using BusinessLogic.Services;
+using Core.Abstractions.DataAccess.Repositories;
 using Test.TestHelpers;
-using Core.Interfaces.DataAccess.Repositories;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shared.Dto;

@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using System.Text;
-using Core.Interfaces.Infrastructure;
+using Core.Abstractions.Infrastructure;
 using EncryptedNotes.Configurations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;

@@ -1,4 +1,4 @@
-namespace Core.Interfaces.Infrastructure;
+namespace Core.Abstractions.Infrastructure;
 
 public interface IJwtService
 {

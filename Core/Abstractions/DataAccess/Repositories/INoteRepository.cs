@@ -1,6 +1,6 @@
 using Core.Entities;
 
-namespace Core.Interfaces.DataAccess.Repositories;
+namespace Core.Abstractions.DataAccess.Repositories;
 
 public interface INoteRepository
 {

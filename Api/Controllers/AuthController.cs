@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using AutoMapper;
-using Core.Interfaces.BusinessLogic.Services;
+using Core.Abstractions.BusinessLogic.Services;
 using EncryptedNotes.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;

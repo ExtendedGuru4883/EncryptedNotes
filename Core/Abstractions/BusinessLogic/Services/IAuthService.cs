@@ -2,7 +2,7 @@ using Shared.Dto.Requests;
 using Shared.Dto.Responses;
 using Shared.Results;
 
-namespace Core.Interfaces.BusinessLogic.Services;
+namespace Core.Abstractions.BusinessLogic.Services;
 
 public interface IAuthService
 {

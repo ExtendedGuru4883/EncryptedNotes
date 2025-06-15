@@ -1,7 +1,7 @@
 using AutoMapper;
+using Core.Abstractions.BusinessLogic.Services;
+using Core.Abstractions.DataAccess.Repositories;
 using Core.Entities;
-using Core.Interfaces.BusinessLogic.Services;
-using Core.Interfaces.DataAccess.Repositories;
 using Microsoft.Extensions.Logging;
 using Shared.Dto;
 using Shared.Enums;

@@ -11,5 +11,8 @@ public class BusinessLogicMappingProfile : Profile
     {
         CreateMap<UserDto, UserEntity>();
         CreateMap<SignupRequest, UserDto>();
+        
+        CreateMap<NoteDto, NoteEntity>();
+        CreateMap<NoteEntity, NoteDto>();
     }
 }

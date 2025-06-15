@@ -6,7 +6,7 @@ namespace DataAccess.Repositories;
 
 public class UserRepository(AppDbContext dbContext) : IUserRepository
 {
-    public async Task<UserEntity?> GetByUsernameAsync(string username)
+    public async Task<UserEntity?> GetByUsernameAsNoTrackingAsync(string username)
     {
         return await dbContext.Users.AsNoTracking()
             .FirstOrDefaultAsync(u => u.Username == username);

@@ -74,7 +74,7 @@ public class AuthServiceTests
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
 
-        _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
+        _mockUserRepository.Setup(r => r.GetByUsernameAsNoTrackingAsync(It.IsAny<string>()))
             .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
 
         _mockSignatureHelper.Setup(s =>
@@ -98,7 +98,7 @@ public class AuthServiceTests
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
         
-        _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
+        _mockUserRepository.Setup(r => r.GetByUsernameAsNoTrackingAsync(It.IsAny<string>()))
             .ReturnsAsync(null as UserEntity); //Mocking unsuccessful user retrieval
 
         //Act
@@ -118,7 +118,7 @@ public class AuthServiceTests
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
 
-        _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
+        _mockUserRepository.Setup(r => r.GetByUsernameAsNoTrackingAsync(It.IsAny<string>()))
             .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
 
         _mockSignatureHelper.Setup(s =>
@@ -180,7 +180,7 @@ public class AuthServiceTests
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
         
-        _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
+        _mockUserRepository.Setup(r => r.GetByUsernameAsNoTrackingAsync(It.IsAny<string>()))
             .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
 
         //Act

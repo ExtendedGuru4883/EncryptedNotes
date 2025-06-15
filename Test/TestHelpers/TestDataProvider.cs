@@ -50,6 +50,19 @@ public static class TestDataProvider
         };
     }
     
+    public static NoteEntity GetNoteEntity(Guid userId)
+    {
+        return new NoteEntity
+        {
+            Id = Guid.NewGuid(),
+            EncryptedTitleBase64 = GetValidBase64Value(),
+            EncryptedContentBase64 = GetValidBase64Value(),
+            TimeStamp = DateTime.UtcNow,
+            UserId = userId,
+
+        };
+    }
+
     public static ErrorResponseDto GetErrorResponseDto()
     {
         return new ErrorResponseDto("test-error");

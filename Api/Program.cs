@@ -45,6 +45,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 //Service Infrastructure
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
+builder.Services.AddScoped<INoteRepository, NoteRepository>();
 
 //Helper
 builder.Services.AddSingleton<ICryptoHelper, CryptoHelper>();

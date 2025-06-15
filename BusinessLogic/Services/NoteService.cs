@@ -1,0 +1,41 @@
+using AutoMapper;
+using Core.Abstractions.BusinessLogic.Services;
+using Core.Abstractions.DataAccess.Repositories;
+using Core.Abstractions.Infrastructure;
+using Microsoft.Extensions.Logging;
+using Shared.Dto;
+using Shared.Enums;
+using Shared.Results;
+
+namespace BusinessLogic.Services;
+
+public class NoteService(
+    INoteRepository noteRepository,
+    ICurrentUserService currentUserService,
+    IMapper mapper,
+    ILogger<NoteService> logger) : INoteService
+{
+    public async Task<ServiceResult<List<NoteDto>>> GetAllForCurrentUser()
+    {
+        var currentUserId = currentUserService.UserId;
+
+        if (currentUserId == null)
+        {
+            logger.LogInformation("Getting notes for current user failed with unauthorized: current user id is null");
+            return ServiceResult<List<NoteDto>>.Failure("There is no authenticated user",
+                ServiceResultErrorType.Unauthorized);
+        }
+
+        var notes = await noteRepository.GetAllByUserIdAsNoTrackingAsync(Guid.Parse(currentUserId));
+
+        if (notes.Count == 0)
+        {
+            logger.LogInformation("Getting notes for current user {currentUserId} failed with not found: current user has no notes", currentUserId);
+            return ServiceResult<List<NoteDto>>.Failure("No notes found for the authenticated user",
+                ServiceResultErrorType.NotFound);
+        }
+
+        logger.LogInformation("Getting notes for current user {currentUserId} succeeded", currentUserId);
+        return ServiceResult<List<NoteDto>>.SuccessOk(mapper.Map<List<NoteDto>>(notes));
+    }
+}

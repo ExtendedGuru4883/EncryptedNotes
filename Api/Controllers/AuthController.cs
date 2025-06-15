@@ -10,7 +10,7 @@ using Shared.Dto.Responses;
 namespace EncryptedNotes.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class AuthController(IUserService userService, IAuthService authService, IMapper mapper) : ControllerBase
 {
     [HttpPost]

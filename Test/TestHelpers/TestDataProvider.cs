@@ -1,3 +1,4 @@
+using Core.Entities;
 using Shared.Dto;
 using Shared.Dto.Requests;
 using Shared.Dto.Responses;
@@ -30,6 +31,18 @@ public static class TestDataProvider
     {
         return new UserDto
         {
+            Username = "test-username",
+            SignatureSaltBase64 = GetValidBase64Value(),
+            EncryptionSaltBase64 = GetValidBase64Value(),
+            PublicKeyBase64 = GetValidBase64Value()
+        };
+    }
+
+    public static UserEntity GetUserEntity()
+    {
+        return new UserEntity
+        {
+            Id = Guid.NewGuid(),
             Username = "test-username",
             SignatureSaltBase64 = GetValidBase64Value(),
             EncryptionSaltBase64 = GetValidBase64Value(),

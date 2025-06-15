@@ -6,6 +6,12 @@ namespace DataAccess.Repositories;
 
 public class UserRepository(AppDbContext dbContext) : IUserRepository
 {
+    public async Task<UserEntity?> GetByUsernameAsync(string username)
+    {
+        return await dbContext.Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Username == username);
+    }
+
     public async Task<UserEntity> AddAsync(UserEntity user)
     {
         var entityEntry = await dbContext.Users.AddAsync(user);
@@ -17,7 +23,7 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
     {
         return await dbContext.Users
             .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Username == username) != null;
+            .AnyAsync(u => u.Username == username);
     }
 
     public async Task<string?> GetSignatureSaltByUsername(string username)

@@ -58,7 +58,7 @@ public class AuthService(
 
         if (string.IsNullOrEmpty(cachedNonceBase64))
         {
-            logger.LogError("Nonce is null or empty for user {username} is valid", loginRequest.Username);
+            logger.LogError("Nonce is null or empty for user {username}", loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge corrupted",
                 ServiceResultErrorType.InternalServerError);
         }
@@ -69,21 +69,21 @@ public class AuthService(
                 loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge invalid", ServiceResultErrorType.Unauthorized);
         }
-
         logger.LogInformation("Nonce for user {username} is valid and matched request nonce", loginRequest.Username);
 
-        var publicKey = await userRepository.GetPublicKeyByUsername(loginRequest.Username);
-        if (publicKey is null)
+        var userEntity = await userRepository.GetByUsernameAsync(loginRequest.Username);
+        if (userEntity == null)
         {
-            //This situation is only possible if the user exists in the database (otherwise it wouldn't have been possible
-            //to generate a challenge as it needs to retrieve and send the user signature salt) but has an empty public
-            //key (which is a required field in both the database and the signup request) so it indicates a problem in the database
+            //This situation is only possible if the user existed in the database when the challenge was generated
+            //(challenge response includes the user's signature salt retrieved form database) but doesn't exist anymore.
+            //Until user deletion is implemented, this shouldn't happen under normal circumstances.
             //TODO when user deletion is implemented, decide if this should be handled differently as it would be
-            //possible for a user to get a challenge, delete its account and then try to log in
+            //possible for a user to get a challenge, delete its account and then try to log in (won't be internal
+            //server error anymore)
             logger.LogError(
-                "Public ket not found for user {username}, but valid nonce was found (so challenge generation succeeded and the user must exist). Data inconsistency?",
+                "User {username} not found in database, but valid nonce was found (so challenge generation succeeded and the user must exist). Data inconsistency?",
                 loginRequest.Username);
-            return ServiceResult<LoginResponse>.Failure("Public key not found",
+            return ServiceResult<LoginResponse>.Failure("User not found",
                 ServiceResultErrorType.InternalServerError);
         }
 
@@ -91,7 +91,7 @@ public class AuthService(
         {
             var signatureBytes = Convert.FromBase64String(loginRequest.NonceSignatureBase64);
             var nonceBytes = Convert.FromBase64String(cachedNonceBase64);
-            var publicKeyBytes = Convert.FromBase64String(publicKey);
+            var publicKeyBytes = Convert.FromBase64String(userEntity.PublicKeyBase64);
             if (!signatureHelper.VerifyDetachedSignature(signatureBytes,
                     nonceBytes, publicKeyBytes))
             {
@@ -108,27 +108,12 @@ public class AuthService(
 
         logger.LogInformation("Challenge completed by user {username}", loginRequest.Username);
 
-        var encryptionSalt = await userRepository.GetEncryptionSaltByUsername(loginRequest.Username);
-        if (encryptionSalt is null)
-        {
-            //This situation is only possible if the user exists in the database (otherwise it wouldn't have been possible
-            //to generate a challenge as it needs to retrieve and send the user signature salt) but has an empty encryption
-            //salt (which is a required field in both the database and the signup request) so it indicates a problem in the database
-            //TODO when user deletion is implemented, decide if this should be handled differently as it would be
-            //possible for a user to get a challenge, delete its account and then try to log in
-            logger.LogError(
-                "Challenge completed by user {username}, but encryption salt not found. Potential data inconsistency.",
-                loginRequest.Username);
-            return ServiceResult<LoginResponse>.Failure("Challenge completed. User encryption salt not found",
-                ServiceResultErrorType.InternalServerError);
-        }
-
         var loginResponse = new LoginResponse()
         {
-            Token = jwtService.GenerateToken(loginRequest.Username),
-            EncryptionSaltBase64 = encryptionSalt,
+            Token = jwtService.GenerateToken(userEntity.Username, userEntity.Id),
+            EncryptionSaltBase64 = userEntity.EncryptionSaltBase64,
         };
-        logger.LogInformation("Login completed by user {username}. Generated JWT and retrieved encryption salt",
+        logger.LogInformation("Login completed by user {username}. JWT generated",
             loginRequest.Username);
         return ServiceResult<LoginResponse>.SuccessOk(loginResponse);
     }

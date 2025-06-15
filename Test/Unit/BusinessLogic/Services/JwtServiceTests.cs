@@ -34,9 +34,10 @@ public class JwtServiceTests
     {
         //Arrange
         const string username = "test-username";
+        var userId = Guid.NewGuid();
 
         //Act
-        var token = _jwtService.GenerateToken(username);
+        var token = _jwtService.GenerateToken(username, userId);
         var handler = new JsonWebTokenHandler();
         var jwt = handler.ReadJsonWebToken(token);
         
@@ -45,14 +46,17 @@ public class JwtServiceTests
         var expTime = DateTimeOffset.FromUnixTimeSeconds(jwt.GetPayloadValue<long>("exp"));
 
         //Assert
+        jwt.GetPayloadValue<string>(ClaimTypes.NameIdentifier)
+            .Should().Be(userId.ToString(), "because the 'name identifier' claim should match the one passed to GenerateToken");
+        
         jwt.GetPayloadValue<string>(ClaimTypes.Name)
-            .Should().Be(username, "because the username claim should match the one passed to GenerateToken");
+            .Should().Be(username, "because the 'name' claim should match the one passed to GenerateToken");
 
         jwt.GetPayloadValue<string>("aud")
-            .Should().Be(Audience, "because the audience claim should match the JwtSettings Audience");
+            .Should().Be(Audience, "because the 'audience' claim should match the JwtSettings Audience");
 
         jwt.GetPayloadValue<string>("iss")
-            .Should().Be(Issuer, "because the issuer claim should match the JwtSettings Issuer");
+            .Should().Be(Issuer, "because the 'issuer' claim should match the JwtSettings Issuer");
 
         jwt.GetPayloadValue<string>("nbf")
             .Should().Be(jwt.GetPayloadValue<string>("iat"), "because the 'not before' claim should be the same as 'issued at'");

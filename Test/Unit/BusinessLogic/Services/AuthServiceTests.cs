@@ -1,5 +1,6 @@
 using BusinessLogic.Helpers.Crypto.Interfaces;
 using BusinessLogic.Services;
+using Core.Entities;
 using Core.Interfaces.BusinessLogic.Services;
 using Core.Interfaces.DataAccess.Repositories;
 using Microsoft.Extensions.Caching.Memory;
@@ -73,21 +74,38 @@ public class AuthServiceTests
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
 
-        _mockUserRepository.Setup(r => r.GetPublicKeyByUsername(It.IsAny<string>()))
-            .ReturnsAsync(TestDataProvider.GetValidBase64Value()); //Mocking successful public key retrieval
+        _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
+            .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
 
         _mockSignatureHelper.Setup(s =>
                 s.VerifyDetachedSignature(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>()))
             .Returns(true); //Mocking valid signature for the challenge
-        
-        _mockUserRepository.Setup(r => r.GetEncryptionSaltByUsername(It.IsAny<string>()))
-            .ReturnsAsync(TestDataProvider.GetValidBase64Value()); //Mocking successful encryption salt retrieval
 
         //Act
         var serviceResult = await _authService.Login(loginRequest);
 
         //Assert
         CommonAssertions.AssertServiceResultSuccess(serviceResult, ServiceResultSuccessType.Ok);
+    }
+    
+    [Fact]
+    public async Task Login_UserNotFound_ReturnsFailureInternalServerError()
+    {
+        //Arrange
+        var loginRequest = TestDataProvider.GetValidLoginRequest();
+
+        //Mock
+        //Setting nonce in cache for successful retrieval during service execution
+        _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
+        
+        _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
+            .ReturnsAsync(null as UserEntity); //Mocking unsuccessful user retrieval
+
+        //Act
+        var serviceResult = await _authService.Login(loginRequest);
+
+        //Assert
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.InternalServerError);
     }
     
     [Fact]
@@ -100,8 +118,8 @@ public class AuthServiceTests
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
 
-        _mockUserRepository.Setup(r => r.GetPublicKeyByUsername(It.IsAny<string>()))
-            .ReturnsAsync(TestDataProvider.GetValidBase64Value()); //Mocking successful public key retrieval
+        _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
+            .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
 
         _mockSignatureHelper.Setup(s =>
                 s.VerifyDetachedSignature(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>()))
@@ -162,8 +180,8 @@ public class AuthServiceTests
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
         
-        _mockUserRepository.Setup(r => r.GetPublicKeyByUsername(It.IsAny<string>()))
-            .ReturnsAsync(TestDataProvider.GetValidBase64Value()); //Mocking successful public key retrieval
+        _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
+            .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
 
         //Act
         var serviceResult = await _authService.Login(loginRequest);

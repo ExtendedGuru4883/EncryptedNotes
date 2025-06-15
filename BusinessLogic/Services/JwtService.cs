@@ -16,12 +16,13 @@ public class JwtService(IOptions<JwtSettings> jwtSettings) : IJwtService
     private readonly string _audience = jwtSettings.Value.Audience;
     private readonly string _issuer = jwtSettings.Value.Issuer;
 
-    public string GenerateToken(string username)
+    public string GenerateToken(string username, Guid  userId)
     {
         var now = DateTime.UtcNow;
         
         var claims = new Dictionary<string, object>()
         {
+            [ClaimTypes.NameIdentifier] = userId.ToString(),
             [ClaimTypes.Name] = username,
         };
 

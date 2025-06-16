@@ -15,5 +15,5 @@ public class UserEntity : BaseEntity
     public required string PublicKeyBase64 { get; set; }
 
     //Navigation properties
-    public IEnumerable<NoteEntity> Notes { get; set; } = [];
+    public IEnumerable<NoteEntity> Notes { get; set; } = new List<NoteEntity>();
 }

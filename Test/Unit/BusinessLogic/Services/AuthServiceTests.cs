@@ -77,7 +77,7 @@ public class AuthServiceTests
         _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
             .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
 
-        _mockUserRepository.Setup(r => r.GetByUsernameAsNoTrackingAsync(It.IsAny<string>()))
+        _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
             .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
 
         _mockSignatureHelper.Setup(s =>
@@ -104,7 +104,7 @@ public class AuthServiceTests
         _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
             .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
 
-        _mockUserRepository.Setup(r => r.GetByUsernameAsNoTrackingAsync(It.IsAny<string>()))
+        _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
             .ReturnsAsync(null as UserEntity); //Mocking unsuccessful user retrieval
 
         //Act
@@ -127,7 +127,7 @@ public class AuthServiceTests
         _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
             .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
 
-        _mockUserRepository.Setup(r => r.GetByUsernameAsNoTrackingAsync(It.IsAny<string>()))
+        _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
             .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
 
         _mockSignatureHelper.Setup(s =>

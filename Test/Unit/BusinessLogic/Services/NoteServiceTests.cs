@@ -7,6 +7,7 @@ using Core.Entities;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Shared.Dto.Requests;
 using Shared.Enums;
 using Test.TestHelpers;
 
@@ -32,14 +33,14 @@ public class NoteServiceTests
     }
 
     [Fact]
-    public async Task GetAllForCurrentUser_ListNotEmptyAuth_ReturnsSuccessOK()
+    public async Task GetAllForCurrentUser_Auth_ReturnsSuccessOK()
     {
         //Arrange
         var currentUserId = Guid.NewGuid().ToString();
 
         //Mock
         _mockCurrentUserService.Setup(c => c.UserId).Returns(currentUserId);
-        _mockNoteRepository.Setup(n => n.GetAllByUserIdAsNoTrackingAsync(It.IsAny<Guid>()))
+        _mockNoteRepository.Setup(n => n.GetAllByUserIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync([TestDataProvider.GetNoteEntity(Guid.Parse(currentUserId))]);
 
         //Act
@@ -61,9 +62,57 @@ public class NoteServiceTests
         //Assert
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
     }
+    
+    [Fact]
+    public async Task GetPageForCurrentUser_Auth_ReturnsSuccessOK()
+    {
+        //Arrange
+        var currentUserId = Guid.NewGuid().ToString();
+        var paginatedNotesRequest = new PaginatedNotesRequest()
+        {
+            Page = 1,
+            PageSize = 10,
+        };
+
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(currentUserId);
+        _mockNoteRepository.Setup(n => n.GetPageByUserIdAsync(Guid.Parse(currentUserId),
+                paginatedNotesRequest.Page,
+                paginatedNotesRequest.PageSize))
+            .ReturnsAsync(([TestDataProvider.GetNoteEntity(Guid.Parse(currentUserId))], 1));
+
+        //Act
+        var serviceResult = await _noteService.GetPageForCurrentUser(paginatedNotesRequest);
+
+        //Assert
+        serviceResult.Data.Should().NotBeNull();
+        serviceResult.Data.Page.Should().Be(paginatedNotesRequest.Page);
+        serviceResult.Data.PageSize.Should().Be(paginatedNotesRequest.PageSize);
+        serviceResult.Data.Items.Count.Should().Be(1);
+        serviceResult.Data.HasMore.Should().BeFalse();
+        CommonAssertions.AssertServiceResultSuccess(serviceResult, ServiceResultSuccessType.Ok);
+    }
 
     [Fact]
-    public async Task AddAsync_ValidNoteAuth_ReturnsSuccessCreated()
+    public async Task GetPageForCurrentUser_NotAuth_ReturnsFailureUnauthorized()
+    {
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(null as string);
+        var paginatedNotesRequest = new PaginatedNotesRequest()
+        {
+            Page = 1,
+            PageSize = 10,
+        };
+
+        //Act
+        var serviceResult = await _noteService.GetPageForCurrentUser(paginatedNotesRequest);
+
+        //Assert
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
+    }
+    
+    [Fact]
+    public async Task AddAsyncToCurrentUser_ValidNoteAuth_ReturnsSuccessCreated()
     {
         //Arrange
         var currentUserId = Guid.NewGuid();
@@ -84,9 +133,9 @@ public class NoteServiceTests
         serviceResult.Data?.Id.Should().NotBeEmpty();
         CommonAssertions.AssertServiceResultSuccess(serviceResult, ServiceResultSuccessType.Created);
     }
-    
+
     [Fact]
-    public async Task AddAsync_NotAuth_ReturnsFailureUnauthorized()
+    public async Task AddAsyncToCurrentUser_NotAuth_ReturnsFailureUnauthorized()
     {
         //Arrange
         var noteDto = TestDataProvider.GetNoteDto(Guid.NewGuid());

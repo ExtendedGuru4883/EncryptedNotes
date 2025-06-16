@@ -88,7 +88,7 @@ public class AuthService(
 
         logger.LogInformation("Nonce for user {username} is valid and matched request nonce", loginRequest.Username);
 
-        var userEntity = await userRepository.GetByUsernameAsNoTrackingAsync(loginRequest.Username);
+        var userEntity = await userRepository.GetByUsernameAsync(loginRequest.Username);
         if (userEntity == null)
         {
             //This situation is only possible if the user existed in the database when the challenge was generated

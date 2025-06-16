@@ -57,33 +57,14 @@ public class AuthService(
             return ServiceResult<LoginResponse>.Failure("Challenge failed: invalid signature size",
                 ServiceResultErrorType.BadRequest);
         }
-        
-        if (!cache.TryGetValue($"nonceBase64:{loginRequest.Username}", out string? cachedNonceBase64))
+
+        if (!cache.TryGetValue($"nonceBase64:{loginRequest.Username}", out string? cachedNonceBase64) ||
+            string.IsNullOrEmpty(cachedNonceBase64) || cachedNonceBase64 != loginRequest.NonceBase64)
         {
-            logger.LogWarning("Login for user {username} failed with unauthorized: nonce not found for user",
+            logger.LogWarning("Login for user {username} failed with unauthorized",
                 loginRequest.Username);
             return ServiceResult<LoginResponse>.Failure("Challenge expired or invalid",
                 ServiceResultErrorType.Unauthorized);
-        }
-
-        cache.Remove($"nonceBase64:{loginRequest.Username}");
-        logger.LogInformation("Nonce found for user {username} and removed from cache", loginRequest.Username);
-
-        if (string.IsNullOrEmpty(cachedNonceBase64))
-        {
-            logger.LogError(
-                "Login for user {username} failed with internal server error: nonce is null or empty for user",
-                loginRequest.Username);
-            return ServiceResult<LoginResponse>.Failure("Challenge corrupted",
-                ServiceResultErrorType.InternalServerError);
-        }
-
-        if (cachedNonceBase64 != loginRequest.NonceBase64)
-        {
-            logger.LogWarning(
-                "Login for user {username} failed with unauthorized: nonce for user is valid but request nonce is different",
-                loginRequest.Username);
-            return ServiceResult<LoginResponse>.Failure("Challenge invalid", ServiceResultErrorType.Unauthorized);
         }
 
         logger.LogInformation("Nonce for user {username} is valid and matched request nonce", loginRequest.Username);
@@ -108,7 +89,7 @@ public class AuthService(
 
         var nonceBytes = Convert.FromBase64String(cachedNonceBase64);
         var publicKeyBytes = Convert.FromBase64String(userEntity.PublicKeyBase64);
-        
+
         if (!signatureHelper.VerifyDetachedSignature(signatureBytes,
                 nonceBytes, publicKeyBytes))
         {

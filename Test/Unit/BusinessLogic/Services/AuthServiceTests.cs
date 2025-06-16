@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using BusinessLogic.Helpers.Crypto.Interfaces;
 using BusinessLogic.Services;
 using Core.Abstractions.DataAccess.Repositories;
@@ -141,18 +142,20 @@ public class AuthServiceTests
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
     }
 
-    [Fact]
-    public async Task Login_NonceNotInCache_ReturnsFailureUnauthorized()
+    [Theory]
+    [InlineData(false, null)]
+    [InlineData(true, null)]
+    [InlineData(true, "")]
+    public async Task Login_MissingOrInvalidCachedNonce_ReturnsFailureUnauthorized(bool cacheHasValue, string? cachedNonce)
     {
         //Arrange
         var loginRequest = TestDataProvider.GetValidLoginRequest();
 
         //Mock
+        if (cacheHasValue) _realCache.Set($"nonceBase64:{loginRequest.Username}", cachedNonce, TimeSpan.FromMinutes(2));
 
         _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
             .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
-
-        //Not setting the nonce in cache here means the service won't find it.
 
         //Act
         var serviceResult = await _authService.Login(loginRequest);
@@ -186,7 +189,7 @@ public class AuthServiceTests
     [Fact]
     public async Task Login_InvalidSignatureLength_ReturnsFailureBadRequest()
     {
-//Arrange
+        //Arrange
         var loginRequest = TestDataProvider.GetValidLoginRequest();
 
         //Mock

@@ -56,7 +56,7 @@ public class NoteService(
         };
         
 
-        logger.LogInformation("Getting page {Page} of size {PageSize} for current user {UserId} succeeded:", request.Page, request.PageSize, currentUserGuid);
+        logger.LogInformation("Getting page {Page} of size {PageSize} for current user {UserId} succeeded", request.Page, request.PageSize, currentUserGuid);
         return ServiceResult<PaginatedResponse<NoteDto>>.SuccessOk(response);
     }
 

@@ -1,9 +1,22 @@
 @page "/Notes"
 <h3>Notes</h3>
 
-@foreach (var note in _notes)
+<ul>
+    @foreach (var error in _errors)
+    {
+        <li class="text-danger">@error</li>
+    }
+</ul>
+
+<Virtualize Items="_notes" Context="note">
+    <div class="card mb-3">
+        <div class="card-header">@note.Title</div>
+        <div class="card-body">@note.Content</div>
+        <div class="card-footer">@note.TimeStamp</div>
+    </div>
+</Virtualize>
+
+@if (_loadingNotes)
 {
-    <div>Title: @note.Title</div>
-    <div>Content: @note.Content</div>
-    <div>Timestamp: @note.TimeStamp</div>
+    <div>Loading...</div>
 }

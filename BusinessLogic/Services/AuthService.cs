@@ -21,7 +21,7 @@ public class AuthService(
 {
     public async Task<ServiceResult<ChallengeResponse>> GenerateChallenge(string username)
     {
-        var signatureSalt = await userRepository.GetSignatureSaltByUsername(username);
+        var signatureSalt = await userRepository.GetSignatureSaltByUsernameAsync(username);
         if (string.IsNullOrEmpty(signatureSalt))
         {
             logger.LogInformation(

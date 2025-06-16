@@ -7,6 +7,7 @@ using Moq;
 
 namespace Test.Unit.Api.Services;
 
+[Trait("Category", "Unit")]
 public class CurrentUserServiceTests
 {
     private readonly Mock<IHttpContextAccessor> _mockHttpContextAccessor = new();

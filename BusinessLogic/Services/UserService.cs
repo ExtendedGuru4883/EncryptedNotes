@@ -24,7 +24,7 @@ public class UserService(
             return ServiceResult<UserDto>.Failure("Invalid public key size", ServiceResultErrorType.BadRequest);
         }
         
-        if (await userRepository.UsernameExists(userDto.Username))
+        if (await userRepository.UsernameExistsAsync(userDto.Username))
         {
             logger.LogInformation("Adding new user {username} failed  with conflict: username already exists", userDto.Username);
             return ServiceResult<UserDto>.Failure("Username already exists", ServiceResultErrorType.Conflict);

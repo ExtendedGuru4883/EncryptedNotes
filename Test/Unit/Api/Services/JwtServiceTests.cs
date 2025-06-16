@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Test.Unit.Api.Services;
 
+[Trait("Category", "Unit")]
 public class JwtServiceTests
 {
     private const string PrivateKey = "secret-test-key-at-least-128-bits-long";

@@ -12,6 +12,7 @@ using Test.TestHelpers;
 
 namespace Test.Unit.BusinessLogic.Services;
 
+[Trait("Category", "Unit")]
 public class AuthServiceTests
 {
     private readonly Mock<IUserRepository> _mockUserRepository = new();
@@ -37,7 +38,7 @@ public class AuthServiceTests
         const string username = "existing-username";
 
         //Mock
-        _mockUserRepository.Setup(r => r.GetSignatureSaltByUsername(It.IsAny<string>()))
+        _mockUserRepository.Setup(r => r.GetSignatureSaltByUsernameAsync(It.IsAny<string>()))
             .ReturnsAsync(TestDataProvider.GetValidBase64Value()); //Mocking successful retrieval of signature salt
 
         //Act
@@ -55,7 +56,7 @@ public class AuthServiceTests
 
         //Mock
         string? nullString = null;
-        _mockUserRepository.Setup(r => r.GetSignatureSaltByUsername(It.IsAny<string>()))
+        _mockUserRepository.Setup(r => r.GetSignatureSaltByUsernameAsync(It.IsAny<string>()))
             .ReturnsAsync(nullString); //Mocking failure in retrieval of signature salt
 
         //Act

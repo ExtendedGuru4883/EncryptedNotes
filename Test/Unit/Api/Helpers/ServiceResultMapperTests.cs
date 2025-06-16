@@ -8,6 +8,7 @@ using Test.TestHelpers;
 
 namespace Test.Unit.Api.Helpers;
 
+[Trait("Category", "Unit")]
 public class ServiceResultMapperTests
 {
     [Fact]

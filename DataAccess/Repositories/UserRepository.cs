@@ -19,14 +19,14 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
         return entityEntry.Entity;
     }
 
-    public async Task<bool> UsernameExists(string username)
+    public async Task<bool> UsernameExistsAsync(string username)
     {
         return await dbContext.Users
             .AsNoTracking()
             .AnyAsync(u => u.Username == username);
     }
 
-    public async Task<string?> GetSignatureSaltByUsername(string username)
+    public async Task<string?> GetSignatureSaltByUsernameAsync(string username)
     {
         return await dbContext.Users
             .AsNoTracking()

@@ -9,6 +9,7 @@ using Shared.Enums;
 
 namespace Test.Unit.BusinessLogic.Services;
 
+[Trait("Category", "Unit")]
 public class UserServiceTests
 {
     private readonly Mock<IUserRepository> _mockUserRepository = new();
@@ -32,7 +33,7 @@ public class UserServiceTests
         //Mock
         _mockSignatureHelper.Setup(s => s.PublicKeyBytesSize)
             .Returns((Convert.FromBase64String(userDto.PublicKeyBase64).Length));
-        _mockUserRepository.Setup(r => r.UsernameExists(It.IsAny<string>()))
+        _mockUserRepository.Setup(r => r.UsernameExistsAsync(It.IsAny<string>()))
             .ReturnsAsync(false);
 
         //Act
@@ -51,7 +52,7 @@ public class UserServiceTests
         //Mock
         _mockSignatureHelper.Setup(s => s.PublicKeyBytesSize)
             .Returns((Convert.FromBase64String(userDto.PublicKeyBase64).Length));
-        _mockUserRepository.Setup(r => r.UsernameExists(It.IsAny<string>()))
+        _mockUserRepository.Setup(r => r.UsernameExistsAsync(It.IsAny<string>()))
             .ReturnsAsync(true); //Mocking username already existing
 
         //Act

@@ -13,6 +13,7 @@ using Test.TestHelpers;
 
 namespace Test.Unit.BusinessLogic.Services;
 
+[Trait("Category", "Unit")]
 public class NoteServiceTests
 {
     private readonly Mock<INoteRepository> _mockNoteRepository = new();

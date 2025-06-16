@@ -7,6 +7,7 @@ namespace Core.Abstractions.BusinessLogic.Services;
 
 public interface INoteService
 {
+    [Obsolete("Deprecated. Use GetPageForCurrentUser instead.")]
     Task<ServiceResult<List<NoteDto>>> GetAllForCurrentUser();
     Task<ServiceResult<PaginatedResponse<NoteDto>>> GetPageForCurrentUser(PaginatedNotesRequest request);
     Task<ServiceResult<NoteDto>> AddAsyncToCurrentUser(NoteDto noteDto);

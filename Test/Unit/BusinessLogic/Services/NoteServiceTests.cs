@@ -44,7 +44,9 @@ public class NoteServiceTests
             .ReturnsAsync([TestDataProvider.GetNoteEntity(Guid.Parse(currentUserId))]);
 
         //Act
+#pragma warning disable CS0618 // Suppress 'obsolete' warning
         var serviceResult = await _noteService.GetAllForCurrentUser();
+#pragma warning restore CS0618
 
         //Assert
         CommonAssertions.AssertServiceResultSuccess(serviceResult, ServiceResultSuccessType.Ok);
@@ -57,12 +59,14 @@ public class NoteServiceTests
         _mockCurrentUserService.Setup(c => c.UserId).Returns(null as string);
 
         //Act
+#pragma warning disable CS0618 // Suppress 'obsolete' warning
         var serviceResult = await _noteService.GetAllForCurrentUser();
+#pragma warning restore CS0618
 
         //Assert
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
     }
-    
+
     [Fact]
     public async Task GetPageForCurrentUser_Auth_ReturnsSuccessOK()
     {
@@ -110,7 +114,7 @@ public class NoteServiceTests
         //Assert
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
     }
-    
+
     [Fact]
     public async Task AddAsyncToCurrentUser_ValidNoteAuth_ReturnsSuccessCreated()
     {

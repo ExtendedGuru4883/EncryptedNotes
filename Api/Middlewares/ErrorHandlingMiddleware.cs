@@ -24,7 +24,7 @@ public class ErrorHandlingMiddleware
             _logger.LogError(ex ,"Exception caught in ErrorHandlingMiddleware");
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(new ErrorResponseDto("Unhandled exception"));
+            await context.Response.WriteAsJsonAsync(new ErrorResponseDto("An unexpected error occurred. Please try again later"));
         }
     }
 }

@@ -18,6 +18,7 @@ public class NoteService(
     IMapper mapper,
     ILogger<NoteService> logger) : INoteService
 {
+    [Obsolete("Deprecated. Use GetPageForCurrentUser instead.")]
     public async Task<ServiceResult<List<NoteDto>>> GetAllForCurrentUser()
     {
         if (!Guid.TryParse(currentUserService.UserId, out var currentUserGuid))

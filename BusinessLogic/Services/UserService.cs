@@ -32,6 +32,6 @@ public class UserService(
 
         await userRepository.AddAsync(mapper.Map<UserEntity>(userDto));
         logger.LogInformation("Adding new user {username} succeeded", userDto.Username);
-        return ServiceResult<UserDto>.Success(userDto, ServiceResultSuccessType.Created);
+        return ServiceResult<UserDto>.SuccessCreated(userDto);
     }
 }

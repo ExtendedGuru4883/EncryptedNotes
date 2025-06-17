@@ -36,4 +36,14 @@ public class NotesController(INoteService noteService, IMapper mapper) : Control
         var noteDto = mapper.Map<NoteDto>(addNoteRequest);
         return ServiceResultMapper.ToActionResult(await noteService.AddAsyncToCurrentUser(noteDto));
     }
+    
+    [HttpDelete("{noteId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> Delete(Guid noteId)
+    {
+        return ServiceResultMapper.ToActionResult(await noteService.DeleteByIdForCurrentUserAsync(noteId));
+    }
 }

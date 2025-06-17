@@ -61,7 +61,6 @@ public partial class Notes : ComponentBase
 
         while (hasMore)
         {
-            Thread.Sleep(1000);
             var queryString = ToQueryString(new PaginatedNotesRequest
             {
                 Page = page,

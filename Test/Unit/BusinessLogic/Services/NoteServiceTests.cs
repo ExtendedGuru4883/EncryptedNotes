@@ -188,7 +188,7 @@ public class NoteServiceTests
     }
 
     [Fact]
-    public async Task DeleteCurrentUserAsync_NotAuth_ReturnsFailureUnauthorized()
+    public async Task DeleteByIdForCurrentUserAsync_NotAuth_ReturnsFailureUnauthorized()
     {
         //Mock
         _mockCurrentUserService.Setup(c => c.UserId).Returns(null as string);
@@ -198,6 +198,61 @@ public class NoteServiceTests
 
         //Assert
         _mockNoteRepository.Verify(n => n.DeleteByIdAndUserIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
+    }
+    
+    [Fact]
+    public async Task UpdateForCurrentUserAsync_AuthAndUpdated_ReturnsSuccessOk()
+    {
+        //Arrange
+        var userId =  Guid.NewGuid();
+        var noteDto = TestDataProvider.GetNoteDto(userId);
+        
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(userId.ToString);
+        _mockNoteRepository.Setup(n => n.UpdateForUserIdAsync(It.IsAny<NoteEntity>(), It.IsAny<Guid>()))
+            .ReturnsAsync(true);
+
+        //Act
+        var serviceResult = await _noteService.UpdateForCurrentUserAsync(noteDto);
+
+        //Assert
+        CommonAssertions.AssertServiceResultSuccess(serviceResult, ServiceResultSuccessType.Ok);
+    }
+    
+    [Fact]
+    public async Task UpdateForCurrentUserAsync_AuthAndNotUpdated_ReturnsFailureNotFound()
+    {
+        //Arrange
+        var userId =  Guid.NewGuid();
+        var noteDto = TestDataProvider.GetNoteDto(userId);
+        
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(userId.ToString);
+        _mockNoteRepository.Setup(n => n.UpdateForUserIdAsync(It.IsAny<NoteEntity>(), It.IsAny<Guid>()))
+            .ReturnsAsync(false);
+
+        //Act
+        var serviceResult = await _noteService.UpdateForCurrentUserAsync(noteDto);
+
+        //Assert
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.NotFound);
+    }
+    
+    [Fact]
+    public async Task UpdateForCurrentUserAsync_NotAuth_ReturnsFailureUnauthorized()
+    {
+        //Arrange
+        var noteDto = TestDataProvider.GetNoteDto(Guid.NewGuid());
+        
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(null as string);
+
+        //Act
+        var serviceResult = await _noteService.UpdateForCurrentUserAsync(noteDto);
+
+        //Assert
+        _mockNoteRepository.Verify(n => n.UpdateForUserIdAsync(It.IsAny<NoteEntity>(), It.IsAny<Guid>()), Times.Never);
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
     }
 }

@@ -83,7 +83,7 @@ public class NoteService(
         if (!Guid.TryParse(currentUserService.UserId, out var currentUserGuid))
         {
             logger.LogInformation(
-                "Note {NoteId} for current user failed with unauthorized: current user id missing or invalid", noteId);
+                "Deleting note {NoteId} for current user failed with unauthorized: current user id missing or invalid", noteId);
             return ServiceResult.Failure("You need to be logged in to delete a note",
                 ServiceResultErrorType.Unauthorized);
         }
@@ -100,5 +100,29 @@ public class NoteService(
         logger.LogInformation(
             "Deleting note {NoteId} for current user {UserId} succeeded", noteId, currentUserGuid);
         return ServiceResult.SuccessNoContent();
+    }
+    
+    public async Task<ServiceResult<NoteDto>> UpdateForCurrentUserAsync(NoteDto noteDto)
+    {
+        if (!Guid.TryParse(currentUserService.UserId, out var currentUserGuid))
+        {
+            logger.LogInformation(
+                "Updating note {NoteId} for current user failed with unauthorized: current user id missing or invalid", noteDto.Id);
+            return ServiceResult<NoteDto>.Failure("You need to be logged in to delete a note",
+                ServiceResultErrorType.Unauthorized);
+        }
+
+        if (!(await noteRepository.UpdateForUserIdAsync(mapper.Map<NoteEntity>(noteDto), currentUserGuid)))
+        {
+            logger.LogInformation(
+                "Updating note {NoteId} for current user {UserId} failed with not found: repository delete returned " +
+                "false, note doesn't exist or doesn't belong to current user", noteDto.Id, currentUserGuid);
+            return ServiceResult<NoteDto>.Failure("Note not found",
+                ServiceResultErrorType.NotFound);
+        }
+        
+        logger.LogInformation(
+            "Updating note {NoteId} for current user {UserId} succeeded", noteDto.Id, currentUserGuid);
+        return ServiceResult<NoteDto>.SuccessOk(noteDto);
     }
 }

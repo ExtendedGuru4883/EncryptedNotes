@@ -18,6 +18,15 @@ public static class CommonAssertions
         serviceResult.Data.Should().NotBeNull();
         serviceResult.SuccessType.Should().Be(expectedSuccessType);
     }
+    
+    public static void AssertServiceResultSuccessNoContent(ServiceResult serviceResult)
+    {
+        serviceResult.IsSuccess.Should()
+            .BeTrue();
+        serviceResult.ErrorMessage.Should().BeEmpty("because there should be no error message when IsSuccess is true");
+        serviceResult.SuccessType.Should().Be(ServiceResultSuccessType.NoContent, "because only 'NoContent' success" +
+            " type should be allowed for non-generic successful service result");
+    }
 
     public static void AssertServiceResultFailure<T>(ServiceResult<T> serviceResult,
         ServiceResultErrorType expectedErrorType)
@@ -27,6 +36,16 @@ public static class CommonAssertions
         serviceResult.ErrorMessage.Should()
             .NotBeNullOrEmpty("because an error message should be present when IsSuccess is false");
         serviceResult.Data.Should().BeNull("because there should be no data when IsSuccess is false");
+        
+    }
+    
+    public static void AssertServiceResultFailure(ServiceResult serviceResult,
+        ServiceResultErrorType expectedErrorType)
+    {
+        serviceResult.IsSuccess.Should()
+            .BeFalse();
+        serviceResult.ErrorMessage.Should()
+            .NotBeNullOrEmpty("because an error message should be present when IsSuccess is false");
         serviceResult.ErrorType.Should().Be(expectedErrorType);
     }
 

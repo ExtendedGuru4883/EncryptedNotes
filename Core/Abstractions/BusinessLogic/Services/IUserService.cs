@@ -6,4 +6,5 @@ namespace Core.Abstractions.BusinessLogic.Services;
 public interface IUserService
 {
     Task<ServiceResult<UserDto>> AddAsync(UserDto userDto);
+    Task<ServiceResult> DeleteCurrentAsync();
 }

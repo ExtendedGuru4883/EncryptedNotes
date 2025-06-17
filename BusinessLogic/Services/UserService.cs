@@ -2,6 +2,7 @@ using AutoMapper;
 using BusinessLogic.Helpers.Crypto.Interfaces;
 using Core.Abstractions.BusinessLogic.Services;
 using Core.Abstractions.DataAccess.Repositories;
+using Core.Abstractions.Infrastructure;
 using Core.Entities;
 using Microsoft.Extensions.Logging;
 using Shared.Dto;
@@ -13,12 +14,13 @@ namespace BusinessLogic.Services;
 public class UserService(
     IUserRepository userRepository,
     ISignatureHelper signatureHelper,
+    ICurrentUserService currentUserService,
     IMapper mapper,
     ILogger<UserService> logger) : IUserService
 {
     public async Task<ServiceResult<UserDto>> AddAsync(UserDto userDto)
     {
-        if ((Convert.FromBase64String(userDto.PublicKeyBase64)).Length != signatureHelper.PublicKeyBytesSize)
+        if (userDto.PublicKeyBase64.Length != signatureHelper.PublicKeyBase64Length)
         {
             logger.LogInformation("Adding new user {username} failed with bad request: invalid public key size", userDto.Username);
             return ServiceResult<UserDto>.Failure("Invalid public key size", ServiceResultErrorType.BadRequest);
@@ -33,5 +35,29 @@ public class UserService(
         await userRepository.AddAsync(mapper.Map<UserEntity>(userDto));
         logger.LogInformation("Adding new user {username} succeeded", userDto.Username);
         return ServiceResult<UserDto>.SuccessCreated(userDto);
+    }
+
+    public async Task<ServiceResult> DeleteCurrentAsync()
+    {
+        if (!Guid.TryParse(currentUserService.UserId, out var currentUserGuid))
+        {
+            logger.LogInformation(
+                "Deleting current user failed with unauthorized: current user id missing or invalid");
+            return ServiceResult.Failure("You need to be logged in to delete your account",
+                ServiceResultErrorType.Unauthorized);
+        }
+
+        if (!(await userRepository.DeleteByIdAsync(currentUserGuid)))
+        {
+            logger.LogInformation(
+                "Deleting current user {UserId} failed with not found: repository delete returned false, user probably" +
+                " doesn't exist", currentUserGuid);
+            return ServiceResult.Failure("User not found",
+                ServiceResultErrorType.NotFound);
+        }
+        
+        logger.LogInformation(
+            "Deleting current user {UserId} succeeded", currentUserGuid);
+        return ServiceResult.SuccessNoContent();
     }
 }

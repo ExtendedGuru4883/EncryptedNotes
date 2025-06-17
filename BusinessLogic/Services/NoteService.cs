@@ -25,7 +25,7 @@ public class NoteService(
         {
             logger.LogInformation(
                 "Getting notes for current user failed with unauthorized: current user id missing or invalid");
-            return ServiceResult<List<NoteDto>>.Failure("There is no authenticated user",
+            return ServiceResult<List<NoteDto>>.Failure("You need to be logged in to get notes",
                 ServiceResultErrorType.Unauthorized);
         }
 
@@ -41,7 +41,7 @@ public class NoteService(
         {
             logger.LogInformation(
                 "Getting paginated notes for current user failed with unauthorized: current user id missing or invalid");
-            return ServiceResult<PaginatedResponse<NoteDto>>.Failure("There is no authenticated user",
+            return ServiceResult<PaginatedResponse<NoteDto>>.Failure("You need to be logged in to get notes",
                 ServiceResultErrorType.Unauthorized);
         }
 

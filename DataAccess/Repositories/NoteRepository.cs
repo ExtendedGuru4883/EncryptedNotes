@@ -49,4 +49,13 @@ public class NoteRepository(AppDbContext dbContext) : INoteRepository
 
         return deleted > 0;
     }
+
+    public async Task<bool> DeleteByIdAndUserIdAsync(Guid noteId, Guid userId)
+    {
+        var deleted = await dbContext.Notes
+            .Where(n => n.Id == noteId && n.UserId == userId)
+            .ExecuteDeleteAsync();
+
+        return deleted > 0;
+    }
 }

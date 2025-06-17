@@ -172,4 +172,72 @@ public class NoteRepositoryTests
         //Assert
         removed.Should().BeFalse();
     }
+    
+    [Fact]
+    public async Task DeleteByIdAndUserIdAsync_ExistingIdCorrectUserId_DeletesReturnsTrue()
+    {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
+        //Arrange
+        var userEntity = TestDataProvider.GetUserEntity();
+        await context.Users.AddAsync(userEntity);
+        await context.SaveChangesAsync();
+        var userId = userEntity.Id;
+        
+        var noteEntity = TestDataProvider.GetNoteEntity(userId);
+        await context.Notes.AddAsync(noteEntity);
+        await context.SaveChangesAsync();
+        var notedId = noteEntity.Id;
+        
+        //Act
+        var removed = await noteRepository.DeleteByIdAndUserIdAsync(notedId, userId);
+        var entityInDb = await context.Notes.Where(n => n.Id == notedId).SingleOrDefaultAsync();
+        
+        //Assert
+        removed.Should().BeTrue();
+        entityInDb.Should().BeNull();
+    }
+    
+    [Fact]
+    public async Task DeleteByIdAndUserIdAsync_InexistentId_ReturnsFalse()
+    {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
+        //Act
+        var removed = await noteRepository.DeleteByIdAndUserIdAsync(Guid.NewGuid(), Guid.NewGuid());
+        
+        //Assert
+        removed.Should().BeFalse();
+    }
+    
+    [Fact]
+    public async Task DeleteByIdAndUserIdAsync_ExistingIdWrongUserId_DoesntDeleteReturnsFalse()
+    {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
+        //Arrange
+        var userEntity = TestDataProvider.GetUserEntity();
+        await context.Users.AddAsync(userEntity);
+        await context.SaveChangesAsync();
+        var userId = userEntity.Id;
+        
+        var noteEntity = TestDataProvider.GetNoteEntity(userEntity.Id);
+        await context.Notes.AddAsync(noteEntity);
+        await context.SaveChangesAsync();
+        var notedId = noteEntity.Id;
+        
+        //Act
+        var removed = await noteRepository.DeleteByIdAndUserIdAsync(notedId, Guid.NewGuid());
+        var entityInDb = await context.Notes.Where(n => n.Id == notedId).SingleOrDefaultAsync();
+        
+        //Assert
+        removed.Should().BeFalse();
+        entityInDb.Should().NotBeNull();
+    }
 }

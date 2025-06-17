@@ -11,4 +11,5 @@ public interface INoteService
     Task<ServiceResult<List<NoteDto>>> GetAllForCurrentUser();
     Task<ServiceResult<PaginatedResponse<NoteDto>>> GetPageForCurrentUser(PaginatedNotesRequest request);
     Task<ServiceResult<NoteDto>> AddAsyncToCurrentUser(NoteDto noteDto);
+    Task<ServiceResult> DeleteByIdForCurrentUserAsync(Guid noteId);
 }

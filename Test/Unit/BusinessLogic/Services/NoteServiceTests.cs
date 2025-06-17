@@ -155,4 +155,49 @@ public class NoteServiceTests
         //Assert
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
     }
+
+    [Fact]
+    public async Task DeleteByIdForCurrentUserAsync_AuthAndDeleted_ReturnsSuccessNoContent()
+    {
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(Guid.NewGuid().ToString);
+        _mockNoteRepository.Setup(n => n.DeleteByIdAndUserIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .ReturnsAsync(true);
+
+        //Act
+        var serviceResult = await _noteService.DeleteByIdForCurrentUserAsync(Guid.NewGuid());
+
+        //Assert
+        CommonAssertions.AssertServiceResultSuccessNoContent(serviceResult);
+    }
+
+    [Fact]
+    public async Task DeleteByIdForCurrentUserAsync_AuthAndNotDeleted_ReturnsFailureNotFound()
+    {
+        //This can happen if the user has been deleted and a new delete request is received with the old still valid token
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(Guid.NewGuid().ToString);
+        _mockNoteRepository.Setup(n => n.DeleteByIdAndUserIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .ReturnsAsync(false); //Mock repository not finding user in db and so not deleting anything
+
+        //Act
+        var serviceResult = await _noteService.DeleteByIdForCurrentUserAsync(Guid.NewGuid());
+
+        //Assert
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteCurrentUserAsync_NotAuth_ReturnsFailureUnauthorized()
+    {
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(null as string);
+
+        //Act
+        var serviceResult = await _noteService.DeleteByIdForCurrentUserAsync(Guid.NewGuid());
+
+        //Assert
+        _mockNoteRepository.Verify(n => n.DeleteByIdAndUserIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
+    }
 }

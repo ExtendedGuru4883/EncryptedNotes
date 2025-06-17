@@ -123,6 +123,7 @@ public class UserServiceTests
         var serviceResult = await _userService.DeleteCurrentAsync();
 
         //Assert
+        _mockUserRepository.Verify(c => c.DeleteByIdAsync(It.IsAny<Guid>()), Times.Never);
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
     }
 }

@@ -46,6 +46,12 @@ public class ApiClient(
     public Task<HttpResponseMessage> PostAsync(string uri, HttpContent? content) => 
         SendAsync(CreateHttpRequest(HttpMethod.Post, uri, content), false);
 
+    public Task<HttpResponseMessage> DeleteWithAuthAsync(string uri) =>
+        SendAsync(CreateHttpRequest(HttpMethod.Delete, uri), true);
+
+    public Task<HttpResponseMessage> DeleteAsync(string uri) =>
+        SendAsync(CreateHttpRequest(HttpMethod.Delete, uri), false);
+
     private async Task<ApiResponse<T>> HandleJsonRequestAsync<T>(HttpMethod method, string uri, HttpContent? content,
         bool expectContent, bool withAuth)
     {
@@ -53,13 +59,7 @@ public class ApiClient(
 
         try
         {
-            var response = method == HttpMethod.Post
-                ? withAuth
-                    ? await PostWithAuthAsync(uri, content)
-                    : await PostAsync(uri, content)
-                : withAuth
-                    ? await GetWithAuthAsync(uri)
-                    : await GetAsync(uri);
+            var response = await SendAsync(CreateHttpRequest(method, uri, content), withAuth);
 
             apiResponse.StatusCode = response.StatusCode;
 
@@ -138,16 +138,22 @@ public class ApiClient(
     public Task<ApiResponse> HandleJsonPostAsync(string uri, HttpContent? content) =>
         HandleWithoutContentAsync(HttpMethod.Post, uri, content, false);
 
-    public Task<ApiResponse<T>> HandleJsonGetWithAuthAsync<T>(string uri) =>
+    public Task<ApiResponse<T>> HandleGetWithAuthAsync<T>(string uri) =>
         HandleWithContentAsync<T>(HttpMethod.Get, uri, null, true);
 
 
-    public Task<ApiResponse<T>> HandleJsonGetAsync<T>(string uri) =>
+    public Task<ApiResponse<T>> HandleGetAsync<T>(string uri) =>
         HandleWithContentAsync<T>(HttpMethod.Get, uri, null, false);
 
-    public Task<ApiResponse> HandleJsonGetWithAuthAsync(string uri) =>
+    public Task<ApiResponse> HandleGetWithAuthAsync(string uri) =>
         HandleWithoutContentAsync(HttpMethod.Get, uri, null, true);
 
-    public Task<ApiResponse> HandleJsonGetAsync(string uri) =>
+    public Task<ApiResponse> HandleGetAsync(string uri) =>
         HandleWithoutContentAsync(HttpMethod.Get, uri, null, false);
+
+    public Task<ApiResponse> HandleDeleteWithAuthAsync(string uri) =>
+        HandleWithoutContentAsync(HttpMethod.Delete, uri, null, true);
+    
+    public Task<ApiResponse> HandleDeleteAsync(string uri) =>
+        HandleWithoutContentAsync(HttpMethod.Delete, uri, null, false);
 }

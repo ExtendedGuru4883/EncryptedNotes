@@ -22,6 +22,8 @@ public partial class Notes : ComponentBase
 
     private readonly List<string> _errors = [];
     private bool _loadingNotes = true;
+    private Guid _askConfirmDeletionNoteId = Guid.Empty;
+    private Guid _awaitingDeletionNoteId = Guid.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -36,6 +38,36 @@ public partial class Notes : ComponentBase
         }
     }
 
+    private async Task DeleteNoteAsync(Guid noteId)
+    {
+        if (_askConfirmDeletionNoteId !=  noteId)
+        {
+            _askConfirmDeletionNoteId = noteId;
+            StateHasChanged();
+            return;
+        }
+        
+        _awaitingDeletionNoteId = noteId;
+        try
+        {
+            var apiDeleteNoteResponse = await ApiClient.HandleDeleteWithAuthAsync($"notes/{noteId}");
+            if (apiDeleteNoteResponse.IsSuccess)
+            {
+                var removed = _notes.FirstOrDefault(n => n.Id == noteId);
+                if (removed != null) _notes.Remove(removed);
+                return;
+            }
+
+            //!apiDeleteNoteResponse.IsSuccess;
+            _errors.Add(apiDeleteNoteResponse.ErrorMessage ?? "Unexpected error deleting note");
+        }
+        finally
+        {
+            _awaitingDeletionNoteId = Guid.Empty;
+            _askConfirmDeletionNoteId = Guid.Empty;
+        }
+    }
+    
     private async Task<bool> TryInitializeEncryptionKey()
     {
         var encryptionKeyBase64 = await SessionStorageService.GetItemAsStringAsync("encryptionKeyBase64");
@@ -68,7 +100,7 @@ public partial class Notes : ComponentBase
             });
 
             var apiGetNotesResponse =
-                await ApiClient.HandleJsonGetWithAuthAsync<PaginatedResponse<NoteDto>>(
+                await ApiClient.HandleGetWithAuthAsync<PaginatedResponse<NoteDto>>(
                     $"notes?{queryString}");
             if (apiGetNotesResponse is not { IsSuccess: true, Data: not null })
             {
@@ -79,6 +111,7 @@ public partial class Notes : ComponentBase
 
             var pageNotes = apiGetNotesResponse.Data.Items.Select(n => new NoteModel
             {
+                Id = n.Id,
                 Title = Encoding.UTF8.GetString(CryptoHelper.Decrypt(
                     Convert.FromBase64String(n.EncryptedTitleBase64),
                     _encryptionKeyBytes)),

@@ -9,10 +9,18 @@
 </ul>
 
 <Virtualize Items="_notes" Context="note">
-    <div class="card mb-3">
+    <div @key="note.Id" class="card mb-3">
         <div class="card-header">@note.Title</div>
         <div class="card-body">@note.Content</div>
-        <div class="card-footer">@note.TimeStamp</div>
+        <div class="card-footer">
+            <div>@note.TimeStamp</div>
+            <button class="btn-danger" @onclick="() => DeleteNoteAsync(note.Id)"
+                    disabled="@(_awaitingDeletionNoteId != Guid.Empty)">
+                @(_askConfirmDeletionNoteId == note.Id
+                    ? _awaitingDeletionNoteId == note.Id ? "Deleting..." : "Confirm?"
+                    : "Delete")
+            </button>
+        </div>
     </div>
 </Virtualize>
 

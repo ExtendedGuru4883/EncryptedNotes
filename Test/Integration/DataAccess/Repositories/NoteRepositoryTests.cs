@@ -6,33 +6,26 @@ using Test.TestHelpers;
 
 namespace Test.Integration.DataAccess.Repositories;
 
+[Trait("Category", "Integration")]
 public class NoteRepositoryTests
 {
-    private readonly DbContextOptions<AppDbContext> _options = new DbContextOptionsBuilder<AppDbContext>()
-        .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
-    private readonly AppDbContext _dbContext;
-
-    private readonly NoteRepository _noteRepository;
-
-    public NoteRepositoryTests()
-    {
-        _dbContext = new AppDbContext(_options);
-        _noteRepository = new NoteRepository(_dbContext);
-    }
-    
     [Fact]
     public async Task GetAllByUserIdAsync_ExistingId_ReturnsEntityList()
     {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
         //Arrange
         var userEntity = TestDataProvider.GetUserEntity();
-        await _dbContext.Users.AddAsync(userEntity);
-        await _dbContext.SaveChangesAsync();
+        await context.Users.AddAsync(userEntity);
+        await context.SaveChangesAsync();
         var noteEntity = TestDataProvider.GetNoteEntity(userEntity.Id);
-        await _dbContext.Notes.AddAsync(noteEntity);
-        await _dbContext.SaveChangesAsync();
+        await context.Notes.AddAsync(noteEntity);
+        await context.SaveChangesAsync();
         
         //Act
-        var returnedEntityList = await _noteRepository.GetAllByUserIdAsync(userEntity.Id);
+        var returnedEntityList = await noteRepository.GetAllByUserIdAsync(userEntity.Id);
         
         //Assert
         returnedEntityList.Should().NotBeNull();
@@ -43,8 +36,12 @@ public class NoteRepositoryTests
     [Fact]
     public async Task GetAllByUserIdAsync_InexistentId_ReturnsEmptyList()
     {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
         //Act
-        var returnedEntityList = await _noteRepository.GetAllByUserIdAsync(Guid.NewGuid());
+        var returnedEntityList = await noteRepository.GetAllByUserIdAsync(Guid.NewGuid());
         
         //Assert
         returnedEntityList.Should().NotBeNull();
@@ -54,18 +51,21 @@ public class NoteRepositoryTests
     [Fact]
     public async Task GetPageByUserIdAsync_ExistingId_ReturnsEntityListAndCorrectCount()
     {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
         //Arrange
         var userEntity = TestDataProvider.GetUserEntity();
-        await _dbContext.Users.AddAsync(userEntity);
-        await _dbContext.SaveChangesAsync();
+        await context.Users.AddAsync(userEntity);
+        await context.SaveChangesAsync();
         var noteEntity1 = TestDataProvider.GetNoteEntity(userEntity.Id);
         var noteEntity2 = TestDataProvider.GetNoteEntity(userEntity.Id);
-        await _dbContext.Notes.AddAsync(noteEntity1);
-        await _dbContext.Notes.AddAsync(noteEntity2);
-        await _dbContext.SaveChangesAsync();
+        await context.Notes.AddRangeAsync(noteEntity1, noteEntity2);
+        await context.SaveChangesAsync();
         
         //Act
-        var (returnedEntityList, returnedTotalCount) = await _noteRepository.GetPageByUserIdAsync(userEntity.Id, 1, 1);
+        var (returnedEntityList, returnedTotalCount) = await noteRepository.GetPageByUserIdAsync(userEntity.Id, 1, 1);
         
         //Assert
         returnedEntityList.Should().NotBeNull();
@@ -77,8 +77,12 @@ public class NoteRepositoryTests
     [Fact]
     public async Task GetPageByUserIdAsync_InexistentId_ReturnsEmptyListAndCorrectCount()
     {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
         //Act
-        var (returnedEntityList, returnedTotalCount) = await _noteRepository.GetPageByUserIdAsync(Guid.NewGuid(), 1, 1);
+        var (returnedEntityList, returnedTotalCount) = await noteRepository.GetPageByUserIdAsync(Guid.NewGuid(), 1, 1);
         
         //Assert
         returnedEntityList.Should().NotBeNull();
@@ -87,20 +91,85 @@ public class NoteRepositoryTests
     }
     
     [Fact]
-    public async Task AddAsync_InexistentUsername_ReturnsEntityAndUpdatesParam()
+    public async Task AddAsync_ValidAdd_ReturnsEntityAndUpdatesParam()
     {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
         //Arrange
-        var noteEntity = TestDataProvider.GetNoteEntity(Guid.NewGuid());
+        var userEntity = TestDataProvider.GetUserEntity();
+        await context.Users.AddAsync(userEntity);
+        await context.SaveChangesAsync();
+        var noteEntity = TestDataProvider.GetNoteEntity(userEntity.Id);
         noteEntity.Id = Guid.Empty;
         
         //Act
-        var addedEntity = await _noteRepository.AddAsync(noteEntity);
-        var entityInDb = await _dbContext.Notes.FindAsync(addedEntity.Id);
+        var addedEntity = await noteRepository.AddAsync(noteEntity);
+        var entityInDb = await context.Notes.FindAsync(addedEntity.Id);
         
         //Assert
         entityInDb.Should().NotBeNull();
         addedEntity.Should().NotBeNull();
         addedEntity.Should().BeEquivalentTo(entityInDb);
         addedEntity.Should().BeEquivalentTo(noteEntity);
+    }
+    
+    [Fact]
+    public async Task AddAsync_InexistentUserId_Throws()
+    {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
+        //Arrange
+        var noteEntity = TestDataProvider.GetNoteEntity(Guid.NewGuid());
+        noteEntity.Id = Guid.Empty;
+        
+        //Act
+        var act = () => noteRepository.AddAsync(noteEntity);
+        
+        //Assert
+        await act.Should().ThrowAsync<DbUpdateException>();
+    }
+    
+    [Fact]
+    public async Task DeleteByIdAsync_ExistingId_DeletesReturnsTrue()
+    {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
+        //Arrange
+        var userEntity = TestDataProvider.GetUserEntity();
+        await context.Users.AddAsync(userEntity);
+        await context.SaveChangesAsync();
+        
+        var noteEntity = TestDataProvider.GetNoteEntity(userEntity.Id);
+        await context.Notes.AddAsync(noteEntity);
+        await context.SaveChangesAsync();
+        var notedId = noteEntity.Id;
+        
+        //Act
+        var removed = await noteRepository.DeleteByIdAsync(notedId);
+        var entityInDb = await context.Notes.Where(n => n.Id == notedId).SingleOrDefaultAsync();
+        
+        //Assert
+        removed.Should().BeTrue();
+        entityInDb.Should().BeNull();
+    }
+    
+    [Fact]
+    public async Task DeleteByIdAsync_InexistentId_ReturnsFalse()
+    {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
+        //Act
+        var removed = await noteRepository.DeleteByIdAsync(Guid.NewGuid());
+        
+        //Assert
+        removed.Should().BeFalse();
     }
 }

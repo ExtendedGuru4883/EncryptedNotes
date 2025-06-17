@@ -40,4 +40,13 @@ public class NoteRepository(AppDbContext dbContext) : INoteRepository
         await dbContext.SaveChangesAsync();
         return entityEntry.Entity;
     }
+
+    public async Task<bool> DeleteByIdAsync(Guid noteId)
+    {
+        var deleted = await dbContext.Notes
+            .Where(n => n.Id == noteId)
+            .ExecuteDeleteAsync();
+
+        return deleted > 0;
+    }
 }

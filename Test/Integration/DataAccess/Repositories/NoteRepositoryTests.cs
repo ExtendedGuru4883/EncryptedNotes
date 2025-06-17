@@ -1,3 +1,4 @@
+using Core.Entities;
 using DataAccess;
 using DataAccess.Repositories;
 using FluentAssertions;
@@ -106,12 +107,12 @@ public class NoteRepositoryTests
         
         //Act
         var addedEntity = await noteRepository.AddAsync(noteEntity);
-        var entityInDb = await context.Notes.FindAsync(addedEntity.Id);
+        var entityInDb = await context.Notes.AsNoTracking().FirstOrDefaultAsync(n => n.Id == addedEntity.Id);
         
         //Assert
         entityInDb.Should().NotBeNull();
         addedEntity.Should().NotBeNull();
-        addedEntity.Should().BeEquivalentTo(entityInDb);
+        addedEntity.Should().BeEquivalentTo(entityInDb, options => options.Excluding(n => n.User));
         addedEntity.Should().BeEquivalentTo(noteEntity);
     }
     
@@ -148,11 +149,11 @@ public class NoteRepositoryTests
         var noteEntity = TestDataProvider.GetNoteEntity(userEntity.Id);
         await context.Notes.AddAsync(noteEntity);
         await context.SaveChangesAsync();
-        var notedId = noteEntity.Id;
+        var noteId = noteEntity.Id;
         
         //Act
-        var removed = await noteRepository.DeleteByIdAsync(notedId);
-        var entityInDb = await context.Notes.Where(n => n.Id == notedId).SingleOrDefaultAsync();
+        var removed = await noteRepository.DeleteByIdAsync(noteId);
+        var entityInDb = await context.Notes.AsNoTracking().FirstOrDefaultAsync(n =>  n.Id == noteId);
         
         //Assert
         removed.Should().BeTrue();
@@ -189,11 +190,11 @@ public class NoteRepositoryTests
         var noteEntity = TestDataProvider.GetNoteEntity(userId);
         await context.Notes.AddAsync(noteEntity);
         await context.SaveChangesAsync();
-        var notedId = noteEntity.Id;
+        var noteId = noteEntity.Id;
         
         //Act
-        var removed = await noteRepository.DeleteByIdAndUserIdAsync(notedId, userId);
-        var entityInDb = await context.Notes.Where(n => n.Id == notedId).SingleOrDefaultAsync();
+        var removed = await noteRepository.DeleteByIdAndUserIdAsync(noteId, userId);
+        var entityInDb = await context.Notes.AsNoTracking().FirstOrDefaultAsync(n =>  n.Id == noteId);
         
         //Assert
         removed.Should().BeTrue();
@@ -230,14 +231,104 @@ public class NoteRepositoryTests
         var noteEntity = TestDataProvider.GetNoteEntity(userEntity.Id);
         await context.Notes.AddAsync(noteEntity);
         await context.SaveChangesAsync();
-        var notedId = noteEntity.Id;
+        var noteId = noteEntity.Id;
         
         //Act
-        var removed = await noteRepository.DeleteByIdAndUserIdAsync(notedId, Guid.NewGuid());
-        var entityInDb = await context.Notes.Where(n => n.Id == notedId).SingleOrDefaultAsync();
+        var removed = await noteRepository.DeleteByIdAndUserIdAsync(noteId, Guid.NewGuid());
+        var entityInDb = await context.Notes.AsNoTracking().FirstOrDefaultAsync(n => n.Id == noteId);
         
         //Assert
         removed.Should().BeFalse();
         entityInDb.Should().NotBeNull();
+    }
+    
+    [Fact]
+    public async Task UpdateForUserIdAsync_ExistingNoteIdCorrectUserId_UpdatesReturnsTrue()
+    {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
+        //Arrange
+        var userEntity = TestDataProvider.GetUserEntity();
+        await context.Users.AddAsync(userEntity);
+        await context.SaveChangesAsync();
+        var userId = userEntity.Id;
+        
+        var noteEntity = TestDataProvider.GetNoteEntity(userId);
+        await context.Notes.AddAsync(noteEntity);
+        await context.SaveChangesAsync();
+        var noteId = noteEntity.Id;
+        var editedNoteEntity = new NoteEntity
+        {
+            Id = noteId,
+            EncryptedTitleBase64 = "test",
+            EncryptedContentBase64 = "test",
+            UserId = userId,
+        };
+        
+        //Act
+        var updated = await noteRepository.UpdateForUserIdAsync(editedNoteEntity, userId);
+        var entityInDb = await context.Notes.AsNoTracking().FirstOrDefaultAsync(n => n.Id == noteId);
+        
+        //Assert
+        updated.Should().BeTrue();
+        entityInDb.Should().BeEquivalentTo(editedNoteEntity);
+    }
+    
+    [Fact]
+    public async Task UpdateForUserIdAsync_InexistentNoteId_ReturnsFalse()
+    {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
+        //Arrange
+        var userEntity = TestDataProvider.GetUserEntity();
+        await context.Users.AddAsync(userEntity);
+        await context.SaveChangesAsync();
+        var userId = userEntity.Id;
+        
+        var noteEntity = TestDataProvider.GetNoteEntity(userId);
+        
+        //Act
+        var updated = await noteRepository.UpdateForUserIdAsync(noteEntity, userId);
+        
+        //Assert
+        updated.Should().BeFalse();
+    }
+    
+    [Fact]
+    public async Task UpdateForUserIdAsync_ExistingNoteIdWrongUserId_DoesntDeleteReturnsFalse()
+    {
+        using var provider = new SqLiteInMemoryDbContextProvider<AppDbContext>();
+        var context = provider.Context;
+        var noteRepository = new  NoteRepository(context);
+        
+        //Arrange
+        var userEntity = TestDataProvider.GetUserEntity();
+        await context.Users.AddAsync(userEntity);
+        await context.SaveChangesAsync();
+        var userId = userEntity.Id;
+        
+        var noteEntity = TestDataProvider.GetNoteEntity(userEntity.Id);
+        await context.Notes.AddAsync(noteEntity);
+        await context.SaveChangesAsync();
+        var noteId = noteEntity.Id;
+        var editedNoteEntity = new NoteEntity
+        {
+            Id = noteId,
+            EncryptedTitleBase64 = "test",
+            EncryptedContentBase64 = "test",
+            UserId = userId,
+        };
+        
+        //Act
+        var updated = await noteRepository.UpdateForUserIdAsync(editedNoteEntity, Guid.NewGuid());
+        var entityInDb = await context.Notes.AsNoTracking().FirstOrDefaultAsync(n => n.Id == noteId);
+        
+        //Assert
+        updated.Should().BeFalse();
+        entityInDb.Should().BeEquivalentTo(noteEntity, options => options.Excluding(n => n.User));
     }
 }

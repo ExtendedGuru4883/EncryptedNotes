@@ -9,4 +9,5 @@ public interface INoteRepository
     Task<NoteEntity> AddAsync(NoteEntity note);
     Task<bool> DeleteByIdAsync(Guid noteId);
     Task<bool> DeleteByIdAndUserIdAsync(Guid noteId, Guid userId);
+    Task<bool> UpdateForUserIdAsync(NoteEntity note, Guid userId);
 }

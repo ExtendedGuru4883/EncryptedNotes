@@ -58,4 +58,16 @@ public class NoteRepository(AppDbContext dbContext) : INoteRepository
 
         return deleted > 0;
     }
+
+    public async Task<bool> UpdateForUserIdAsync(NoteEntity note, Guid userId)
+    {
+        var updated = await dbContext.Notes
+            .Where(n => n.Id == note.Id && n.UserId == userId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(n => n.EncryptedTitleBase64, note.EncryptedTitleBase64)
+                .SetProperty(n => n.EncryptedContentBase64, note.EncryptedContentBase64)
+                .SetProperty(n => n.TimeStamp, note.TimeStamp));
+        
+        return updated > 0;
+    }
 }

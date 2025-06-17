@@ -89,7 +89,7 @@ public class UserRepositoryTests
         
         //Act
         var addedEntity = await userRepository.AddAsync(userEntity);
-        var entityInDb = await context.Users.FindAsync(addedEntity.Id);
+        var entityInDb = await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == addedEntity.Id);
         
         //Assert
         entityInDb.Should().NotBeNull();
@@ -169,10 +169,10 @@ public class UserRepositoryTests
         await context.SaveChangesAsync();
         
         //Act
-        var notesForUserInDbBeforeDelete = await context.Notes.Where(n => n.UserId == userId).ToListAsync();
+        var notesForUserInDbBeforeDelete = await context.Notes.AsNoTracking().Where(n => n.UserId == userId).ToListAsync();
         var removed = await userRepository.DeleteByIdAsync(userId);
-        var userEntityInDb = await context.Users.Where(u => u.Id == userId).SingleOrDefaultAsync();
-        var notesForUserInDbAfterDelete = await context.Notes.Where(n => n.UserId == userId).ToListAsync();
+        var userEntityInDb = await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+        var notesForUserInDbAfterDelete = await context.Notes.AsNoTracking().Where(n => n.UserId == userId).ToListAsync();
         
         //Assert
         removed.Should().BeTrue();

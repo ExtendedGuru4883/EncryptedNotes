@@ -15,7 +15,7 @@ namespace EncryptedNotes.Controllers;
 [Authorize]
 public class NotesController(INoteService noteService, IMapper mapper) : ControllerBase
 {
-    [HttpGet(nameof(Get))]
+    [HttpGet]
     [ProducesResponseType(typeof(PaginatedResponse<NoteDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -24,7 +24,7 @@ public class NotesController(INoteService noteService, IMapper mapper) : Control
         return ServiceResultMapper.ToActionResult(await noteService.GetPageForCurrentUser(request));
     }
     
-    [HttpPost(nameof(Add))]
+    [HttpPost]
     [ProducesResponseType(typeof(List<NoteDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

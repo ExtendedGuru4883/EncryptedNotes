@@ -25,11 +25,11 @@ public class AuthController(IUserService userService, IAuthService authService, 
     }
 
     [HttpGet]
-    [Route(nameof(GetChallenge))]
+    [Route(nameof(Challenge))]
     [ProducesResponseType(typeof(ChallengeResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ChallengeResponse>> GetChallenge([FromQuery][Required] string username)
+    public async Task<ActionResult<ChallengeResponse>> Challenge([FromQuery][Required] string username)
     {
         return ServiceResultMapper.ToActionResult(await authService.GenerateChallenge(username));
     }

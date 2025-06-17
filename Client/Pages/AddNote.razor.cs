@@ -60,7 +60,7 @@ public partial class AddNote : ComponentBase
             };
 
             var apiAddNoteResponse =
-                await ApiClient.HandleJsonPostWithAuthAsync<NoteDto>("notes/add",
+                await ApiClient.HandleJsonPostWithAuthAsync<NoteDto>("notes",
                     JsonContent.Create(addNoteRequest));
 
             if (apiAddNoteResponse is { IsSuccess: true, Data: not null })

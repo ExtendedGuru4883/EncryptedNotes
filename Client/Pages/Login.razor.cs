@@ -31,7 +31,7 @@ public partial class Login : ComponentBase
         {
             var apiChallengeResponse =
                 await ApiClient.HandleJsonGetAsync<ChallengeResponse>(
-                    $"auth/GetChallenge?username={_model.Username}");
+                    $"auth/Challenge?username={_model.Username}");
 
             if (apiChallengeResponse is { IsSuccess: true, Data: not null })
             {

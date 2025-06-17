@@ -70,7 +70,7 @@ public partial class Notes : ComponentBase
 
             var apiGetNotesResponse =
                 await ApiClient.HandleJsonGetWithAuthAsync<PaginatedResponse<NoteDto>>(
-                    $"notes/get?{queryString}");
+                    $"notes?{queryString}");
             if (apiGetNotesResponse is not { IsSuccess: true, Data: not null })
             {
                 //!apiGetNotesResponse.IsSuccess

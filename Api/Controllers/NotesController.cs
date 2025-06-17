@@ -13,6 +13,7 @@ namespace EncryptedNotes.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 public class NotesController(INoteService noteService, IMapper mapper) : ControllerBase
 {
     [HttpGet]
@@ -37,9 +38,19 @@ public class NotesController(INoteService noteService, IMapper mapper) : Control
         return ServiceResultMapper.ToActionResult(await noteService.AddAsyncToCurrentUser(noteDto));
     }
     
+    [HttpPut("{noteId:guid}")]
+    [ProducesResponseType<NoteDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<NoteDto>> Update([FromBody] UpdateNoteRequest updateNoteRequest, Guid noteId)
+    {
+        var noteDto = mapper.Map<NoteDto>(updateNoteRequest) with { Id = noteId };
+        return ServiceResultMapper.ToActionResult(await noteService.UpdateForCurrentUserAsync(noteDto));
+    }
+    
     [HttpDelete("{noteId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Delete(Guid noteId)

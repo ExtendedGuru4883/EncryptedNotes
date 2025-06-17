@@ -1,6 +1,6 @@
 namespace Shared.Dto.Responses;
 
-public class ErrorResponseDto
+public record ErrorResponseDto
 {
     public string ErrorMessage { get; init; } = string.Empty;
     

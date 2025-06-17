@@ -1,6 +1,6 @@
 namespace Shared.Dto.Responses;
 
-public class PaginatedResponse<T>
+public record PaginatedResponse<T>
 {
     public required List<T> Items { get; init; }
     public required int Page { get; init; }

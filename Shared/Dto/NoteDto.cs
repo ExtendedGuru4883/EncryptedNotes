@@ -3,7 +3,7 @@ using Shared.Validations;
 
 namespace Shared.Dto;
 
-public class NoteDto
+public record NoteDto
 {
     public Guid Id { get; init; }
     [Required]

@@ -11,5 +11,6 @@ public class ApiMappingProfile : Profile
         CreateMap<SignupRequest, UserDto>();
         
         CreateMap<AddNoteRequest, NoteDto>();
+        CreateMap<UpdateNoteRequest, NoteDto>();
     }
 }

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Shared.Dto.Requests;
 
-public class PaginatedNotesRequest
+public record PaginatedNotesRequest
 {
     [Required]
     [Range(1, int.MaxValue)]

@@ -3,7 +3,7 @@ using Shared.Validations;
 
 namespace Shared.Dto;
 
-public class UserDto
+public record UserDto
 {
     [Required]
     [RegularExpression("^[a-zA-Z0-9]*$", ErrorMessage = "Username must be alphanumeric")]

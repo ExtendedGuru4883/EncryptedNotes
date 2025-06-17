@@ -3,7 +3,7 @@ using Shared.Validations;
 
 namespace Shared.Dto.Requests;
 
-public class AddNoteRequest
+public record AddNoteRequest
 {
     [Required]
     [ValidBase64]

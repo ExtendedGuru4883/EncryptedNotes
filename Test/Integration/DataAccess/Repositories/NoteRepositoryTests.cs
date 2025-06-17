@@ -228,7 +228,7 @@ public class NoteRepositoryTests
         await context.SaveChangesAsync();
         var userId = userEntity.Id;
         
-        var noteEntity = TestDataProvider.GetNoteEntity(userEntity.Id);
+        var noteEntity = TestDataProvider.GetNoteEntity(userId);
         await context.Notes.AddAsync(noteEntity);
         await context.SaveChangesAsync();
         var noteId = noteEntity.Id;

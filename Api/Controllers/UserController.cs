@@ -1,11 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-using AutoMapper;
 using Core.Abstractions.BusinessLogic.Services;
 using EncryptedNotes.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Dto;
-using Shared.Dto.Requests;
 using Shared.Dto.Responses;
 
 namespace EncryptedNotes.Controllers;
@@ -13,6 +9,7 @@ namespace EncryptedNotes.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 public class UserController(IUserService userService) : ControllerBase
 {
     [HttpDelete("me")]

@@ -1,10 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Client.Models;
 
 public class NoteModel
 {
     public required Guid Id { get; init; }
-    public required string Title { get; init; } = string.Empty;
-    public required string Content { get; init; } = string.Empty;
-    public required DateTime TimeStamp { get; init; }
+    [Required(ErrorMessage = "Title is required")]
+    [StringLength(100, ErrorMessage = "Title cannot exceed 100 characters")]
+    public required string Title { get; set; } = string.Empty;
+    [Required(ErrorMessage = "Content is required")]
+    [StringLength(1000, ErrorMessage = "Content cannot exceed 1000 characters")]
+    public required string Content { get; set; } = string.Empty;
+    public required DateTime TimeStamp { get; set; }
 
 }

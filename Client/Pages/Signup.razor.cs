@@ -28,7 +28,7 @@ public partial class Signup : ComponentBase
         {
             var signupRequest = GenerateSignupRequest();
 
-            var response = await ApiClient.HandleJsonPostAsync("auth/signup", JsonContent.Create(signupRequest));
+            var response = await ApiClient.HandlePostAsync("auth/signup", JsonContent.Create(signupRequest));
             if (response.IsSuccess)
             {
                 NavigationManager.NavigateTo("login");

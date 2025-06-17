@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using System.Text;
 using Blazored.SessionStorage;
 using Client.Helpers.Crypto.Interfaces;
@@ -24,6 +25,7 @@ public partial class Notes : ComponentBase
     private bool _loadingNotes = true;
     private Guid _askConfirmDeletionNoteId = Guid.Empty;
     private Guid _awaitingDeletionNoteId = Guid.Empty;
+    private Guid _awaitingUpdateNoteId = Guid.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,6 +69,48 @@ public partial class Notes : ComponentBase
             _askConfirmDeletionNoteId = Guid.Empty;
         }
     }
+
+    private async Task SubmitEdit(NoteModel note)
+    {
+        if (_encryptionKeyBytes is null)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        _errors.Clear();
+        _awaitingUpdateNoteId = note.Id;
+        
+        try
+        {
+            var encryptedTitleBytes =
+                CryptoHelper.Encrypt(Encoding.UTF8.GetBytes(note.Title), _encryptionKeyBytes);
+            var encryptedContentBytes =
+                CryptoHelper.Encrypt(Encoding.UTF8.GetBytes(note.Content), _encryptionKeyBytes);
+            
+            var updateNoteRequest = new UpdateNoteRequest()
+            {
+                EncryptedTitleBase64 = Convert.ToBase64String(encryptedTitleBytes),
+                EncryptedContentBase64 = Convert.ToBase64String(encryptedContentBytes),
+            };
+
+            var apiAddNoteResponse =
+                await ApiClient.HandleJsonPutWithAuthAsync<NoteDto>($"notes/{note.Id}",
+                    JsonContent.Create(updateNoteRequest));
+
+            if (apiAddNoteResponse is { IsSuccess: true, Data: not null })
+            {
+                note.TimeStamp = apiAddNoteResponse.Data.TimeStamp;
+                return;
+            }
+
+            //!apiLoginResponse.IsSuccess
+            _errors.Add(apiAddNoteResponse.ErrorMessage ?? "Unexpected error during note edit");
+        }
+        finally
+        {
+            _awaitingUpdateNoteId = Guid.Empty;
+        }
+    }
     
     private async Task<bool> TryInitializeEncryptionKey()
     {
@@ -100,7 +144,7 @@ public partial class Notes : ComponentBase
             });
 
             var apiGetNotesResponse =
-                await ApiClient.HandleGetWithAuthAsync<PaginatedResponse<NoteDto>>(
+                await ApiClient.HandleJsonGetWithAuthAsync<PaginatedResponse<NoteDto>>(
                     $"notes?{queryString}");
             if (apiGetNotesResponse is not { IsSuccess: true, Data: not null })
             {

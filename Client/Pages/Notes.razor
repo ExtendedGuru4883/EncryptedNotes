@@ -9,19 +9,31 @@
 </ul>
 
 <Virtualize Items="_notes" Context="note">
-    <div @key="note.Id" class="card mb-3">
-        <div class="card-header">@note.Title</div>
-        <div class="card-body">@note.Content</div>
-        <div class="card-footer">
-            <div>@note.TimeStamp</div>
-            <button class="btn-danger" @onclick="() => DeleteNoteAsync(note.Id)"
-                    disabled="@(_awaitingDeletionNoteId != Guid.Empty)">
-                @(_askConfirmDeletionNoteId == note.Id
-                    ? _awaitingDeletionNoteId == note.Id ? "Deleting..." : "Confirm?"
-                    : "Delete")
-            </button>
+    <EditForm OnValidSubmit="() => SubmitEdit(note)" Model="note">
+        <DataAnnotationsValidator/>
+        <div @key="note.Id" class="card mb-3">
+            <div class="card-header">
+                <InputTextArea @bind-Value="note.Title" placeholder="Title"/>
+                <ValidationMessage For="@(() => note.Title)"/>
+            </div>
+            <div class="card-body">
+                <InputTextArea @bind-Value="note.Content" placeholder="Content"/>
+                <ValidationMessage For="@(() => note.Content)"/>
+            </div>
+            <div class="card-footer">
+                <div>@note.TimeStamp</div>
+                <button type="submit" class="btn-primary" disabled="@(_awaitingUpdateNoteId != Guid.Empty)">
+                    @(_awaitingUpdateNoteId == note.Id ? "Updating..." : "Save")
+                </button>
+                <button type="button" class="btn-danger" @onclick="() => DeleteNoteAsync(note.Id)"
+                        disabled="@(_awaitingDeletionNoteId != Guid.Empty)">
+                    @(_askConfirmDeletionNoteId == note.Id
+                        ? _awaitingDeletionNoteId == note.Id ? "Deleting..." : "Confirm?"
+                        : "Delete")
+                </button>
+            </div>
         </div>
-    </div>
+    </EditForm>
 </Virtualize>
 
 @if (_loadingNotes)

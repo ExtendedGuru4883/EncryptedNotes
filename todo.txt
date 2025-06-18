@@ -1,4 +1,3 @@
-- Remove AddNoteFormModel and use NoteModel
-- Remove code duplication for retrieving encryption key from session storage (same logic in pages Notes, AddNote)
+- Remove AddNoteFormModel and use NoteModel ???
 - Remove code duplication for adding and updating notes (almost same logic in pages Notes, AddNote)
 - UI

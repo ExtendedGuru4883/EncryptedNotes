@@ -1,9 +1,9 @@
 using System.Net.Http.Json;
 using System.Text;
-using Blazored.SessionStorage;
 using Client.Helpers.Crypto.Interfaces;
 using Client.Models;
 using Client.Services.Clients.Interfaces;
+using Client.Services.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Shared.Dto;
 using Shared.Dto.Requests;
@@ -15,8 +15,8 @@ public partial class Notes : ComponentBase
 {
     [Inject] public required IApiClient ApiClient { get; set; }
     [Inject] public required ICryptoHelper CryptoHelper { get; set; }
-    [Inject] public required ISessionStorageService SessionStorageService { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
+    [Inject] public required IEncryptionKeyService EncryptionKeyService { get; set; }
 
     private readonly List<NoteModel> _notes = [];
     private byte[]? _encryptionKeyBytes;
@@ -31,7 +31,13 @@ public partial class Notes : ComponentBase
     {
         try
         {
-            if (!(await TryInitializeEncryptionKey())) return;
+            _encryptionKeyBytes = await EncryptionKeyService.TryGetKeyAsync();
+            if (_encryptionKeyBytes is null)
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+            
             await LoadNotesAsync();
         }
         finally
@@ -109,21 +115,6 @@ public partial class Notes : ComponentBase
         finally
         {
             _awaitingUpdateNoteId = Guid.Empty;
-        }
-    }
-    
-    private async Task<bool> TryInitializeEncryptionKey()
-    {
-        var encryptionKeyBase64 = await SessionStorageService.GetItemAsStringAsync("encryptionKeyBase64");
-        try
-        {
-            _encryptionKeyBytes = Convert.FromBase64String(encryptionKeyBase64);
-            return true;
-        }
-        catch
-        {
-            NavigationManager.NavigateTo("/login");
-            return false;
         }
     }
 

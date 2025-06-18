@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Client;
 using Client.Helpers.Crypto;
 using Client.Helpers.Crypto.Interfaces;
+using Client.Services;
 using Client.Services.Clients;
 using Client.Services.Clients.Interfaces;
+using Client.Services.Interfaces;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -15,6 +17,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5207/api/") });
 builder.Services.AddScoped<IApiClient, ApiClient>();
 
+builder.Services.AddScoped<IEncryptionKeyService, EncryptionKeyService>();
 #pragma warning disable CA1416
 builder.Services.AddScoped<ISignatureHelper, SignatureHelper>();
 builder.Services.AddScoped<ICryptoHelper, CryptoHelper>();

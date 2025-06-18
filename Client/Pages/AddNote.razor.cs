@@ -1,9 +1,9 @@
 using System.Net.Http.Json;
 using System.Text;
-using Blazored.SessionStorage;
 using Client.Helpers.Crypto.Interfaces;
 using Client.Models;
 using Client.Services.Clients.Interfaces;
+using Client.Services.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Shared.Dto;
 using Shared.Dto.Requests;
@@ -14,8 +14,8 @@ public partial class AddNote : ComponentBase
 {
     [Inject] public required IApiClient ApiClient { get; set; }
     [Inject] public required ICryptoHelper CryptoHelper { get; set; }
-    [Inject] public required ISessionStorageService SessionStorageService { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
+    [Inject] public required IEncryptionKeyService EncryptionKeyService { get; set; }
 
     private readonly AddNoteFormModel _model = new();
     private readonly List<string> _errors = [];
@@ -24,12 +24,8 @@ public partial class AddNote : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        var encryptionKeyBase64 = await SessionStorageService.GetItemAsStringAsync("encryptionKeyBase64");
-        try
-        {
-            _encryptionKeyBytes = Convert.FromBase64String(encryptionKeyBase64);
-        }
-        catch
+        _encryptionKeyBytes = await EncryptionKeyService.TryGetKeyAsync();
+        if (_encryptionKeyBytes is null)
         {
             NavigationManager.NavigateTo("/login");
             return;
@@ -44,6 +40,7 @@ public partial class AddNote : ComponentBase
             NavigationManager.NavigateTo("/login");
             return;
         }
+
         _errors.Clear();
         _isLoading = true;
 

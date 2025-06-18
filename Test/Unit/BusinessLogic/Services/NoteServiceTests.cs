@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shared.Dto.Requests;
+using Shared.Dto.Requests.Notes;
 using Shared.Enums;
 using Test.TestHelpers;
 

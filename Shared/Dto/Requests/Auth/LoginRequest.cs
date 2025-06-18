@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Shared.Validations;
 
-namespace Shared.Dto.Requests;
+namespace Shared.Dto.Requests.Auth;
 
 public record LoginRequest
 {

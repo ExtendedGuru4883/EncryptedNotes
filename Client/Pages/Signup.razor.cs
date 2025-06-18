@@ -1,11 +1,11 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using System.Text;
-using Client.Models;
 using Client.Models.Forms;
 using Client.Services.Clients.Interfaces;
 using Client.Services.Interfaces;
 using Shared.Dto.Requests;
+using Shared.Dto.Requests.Auth;
 
 namespace Client.Pages;
 

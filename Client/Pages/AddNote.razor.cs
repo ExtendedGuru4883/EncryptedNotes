@@ -12,7 +12,7 @@ public partial class AddNote : ComponentBase
 
     private readonly AddNoteFormModel _model = new();
     private readonly List<string> _errors = [];
-    private bool _isLoading = true;
+    private bool _isLoading;
 
     private async Task SubmitAsync()
     {

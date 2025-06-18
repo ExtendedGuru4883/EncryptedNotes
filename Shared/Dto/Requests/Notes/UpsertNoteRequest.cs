@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using Shared.Validations;
 
-namespace Shared.Dto.Requests;
+namespace Shared.Dto.Requests.Notes;
 
-public record AddNoteRequest
+public record UpsertNoteRequest
 {
     [Required]
     [ValidBase64]

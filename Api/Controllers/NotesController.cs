@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
 using Shared.Dto.Requests;
+using Shared.Dto.Requests.Notes;
 using Shared.Dto.Responses;
 
 namespace EncryptedNotes.Controllers;
@@ -30,7 +31,7 @@ public class NotesController(INoteService noteService, IMapper mapper) : Control
     [ProducesResponseType<NoteDto>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<NoteDto>> Add([FromBody] AddNoteRequest addNoteRequest)
+    public async Task<ActionResult<NoteDto>> Add([FromBody] UpsertNoteRequest addNoteRequest)
     {
         //Note: if the user doesn't exist in the database anymore but the request is made with a still valid JWT
         //The add operation will fail for foreign key violation and the error handling middleware will return 500
@@ -43,7 +44,7 @@ public class NotesController(INoteService noteService, IMapper mapper) : Control
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<NoteDto>> Update([FromBody] UpdateNoteRequest updateNoteRequest, Guid noteId)
+    public async Task<ActionResult<NoteDto>> Update([FromBody] UpsertNoteRequest updateNoteRequest, Guid noteId)
     {
         var noteDto = mapper.Map<NoteDto>(updateNoteRequest) with { Id = noteId };
         return ServiceResultMapper.ToActionResult(await noteService.UpdateForCurrentUserAsync(noteDto));

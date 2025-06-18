@@ -1,4 +1,5 @@
 using Shared.Dto.Requests;
+using Shared.Dto.Requests.Auth;
 using Shared.Dto.Responses;
 using Shared.Results;
 

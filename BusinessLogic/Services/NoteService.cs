@@ -6,6 +6,7 @@ using Core.Entities;
 using Microsoft.Extensions.Logging;
 using Shared.Dto;
 using Shared.Dto.Requests;
+using Shared.Dto.Requests.Notes;
 using Shared.Dto.Responses;
 using Shared.Enums;
 using Shared.Results;

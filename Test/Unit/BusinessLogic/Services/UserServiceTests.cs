@@ -1,6 +1,6 @@
 using AutoMapper;
-using BusinessLogic.Helpers.Crypto.Interfaces;
 using BusinessLogic.Services;
+using Core.Abstractions.BusinessLogic.Services;
 using Core.Abstractions.DataAccess.Repositories;
 using Core.Abstractions.Infrastructure;
 using Test.TestHelpers;
@@ -14,7 +14,7 @@ namespace Test.Unit.BusinessLogic.Services;
 public class UserServiceTests
 {
     private readonly Mock<IUserRepository> _mockUserRepository = new();
-    private readonly Mock<ISignatureHelper> _mockSignatureHelper = new();
+    private readonly Mock<ISignatureService> _mockSignatureHelper = new();
     private readonly Mock<ICurrentUserService> _mockCurrentUserService = new();
     private readonly Mock<IMapper> _mockMapper = new();
     private readonly Mock<ILogger<UserService>> _mockLogger = new();

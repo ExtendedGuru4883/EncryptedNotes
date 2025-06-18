@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Client.Models;
+namespace Client.Models.Responses;
 
 public class ApiResponse<T>
 {

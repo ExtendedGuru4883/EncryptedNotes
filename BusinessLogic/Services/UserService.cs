@@ -1,5 +1,4 @@
 using AutoMapper;
-using BusinessLogic.Helpers.Crypto.Interfaces;
 using Core.Abstractions.BusinessLogic.Services;
 using Core.Abstractions.DataAccess.Repositories;
 using Core.Abstractions.Infrastructure;
@@ -13,14 +12,14 @@ namespace BusinessLogic.Services;
 
 public class UserService(
     IUserRepository userRepository,
-    ISignatureHelper signatureHelper,
+    ISignatureService signatureService,
     ICurrentUserService currentUserService,
     IMapper mapper,
     ILogger<UserService> logger) : IUserService
 {
     public async Task<ServiceResult<UserDto>> AddAsync(UserDto userDto)
     {
-        if (userDto.PublicKeyBase64.Length != signatureHelper.PublicKeyBase64Length)
+        if (userDto.PublicKeyBase64.Length != signatureService.PublicKeyBase64Length)
         {
             logger.LogInformation("Adding new user {username} failed with bad request: invalid public key size", userDto.Username);
             return ServiceResult<UserDto>.Failure("Invalid public key size", ServiceResultErrorType.BadRequest);

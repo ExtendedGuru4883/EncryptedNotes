@@ -3,8 +3,6 @@ using BlazorSodium.Extensions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Client;
-using Client.Helpers.Crypto;
-using Client.Helpers.Crypto.Interfaces;
 using Client.Services;
 using Client.Services.Clients;
 using Client.Services.Clients.Interfaces;
@@ -17,10 +15,11 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5207/api/") });
 builder.Services.AddScoped<IApiClient, ApiClient>();
 
-builder.Services.AddScoped<IEncryptionKeyService, EncryptionKeyService>();
+builder.Services.AddScoped<IEncryptionKeyRetrievalService, EncryptionKeyRetrievalService>();
+builder.Services.AddScoped<INoteService, NoteService>();
 #pragma warning disable CA1416
-builder.Services.AddScoped<ISignatureHelper, SignatureHelper>();
-builder.Services.AddScoped<ICryptoHelper, CryptoHelper>();
+builder.Services.AddScoped<ISignatureService, SignatureService>();
+builder.Services.AddScoped<ICryptoService, CryptoService>();
 #pragma warning restore CA1416
 
 builder.Services.AddBlazorSodium();

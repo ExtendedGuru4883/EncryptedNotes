@@ -1,6 +1,6 @@
-namespace BusinessLogic.Helpers.Crypto.Interfaces;
+namespace Core.Abstractions.BusinessLogic.Services;
 
-public interface ISignatureHelper
+public interface ISignatureService
 {
     public int PublicKeyBytesSize { get; }
     public int PublicKeyBase64Length { get; }

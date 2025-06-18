@@ -1,4 +1,5 @@
 using Client.Models;
+using Client.Models.Responses;
 
 namespace Client.Services.Clients.Interfaces;
 

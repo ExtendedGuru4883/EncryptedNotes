@@ -1,9 +1,10 @@
 using Blazored.SessionStorage;
+using Client.Exceptions;
 using Client.Services.Interfaces;
 
 namespace Client.Services;
 
-public class EncryptionKeyService(ISessionStorageService sessionStorageService) : IEncryptionKeyService
+public class EncryptionKeyRetrievalService(ISessionStorageService sessionStorageService) : IEncryptionKeyRetrievalService
 {
     public async Task<byte[]?> TryGetKeyAsync()
     {
@@ -17,5 +18,11 @@ public class EncryptionKeyService(ISessionStorageService sessionStorageService) 
         {
             return null;
         }
+    }
+
+    public async Task<byte[]> GetKeyOrThrowAsync()
+    {
+        return (await TryGetKeyAsync()) ??
+               throw new EncryptionKeyMissingException("Encryption key is missing or not in correct format");
     }
 }

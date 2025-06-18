@@ -2,9 +2,10 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using System.Text;
 using Blazored.SessionStorage;
-using Client.Helpers.Crypto.Interfaces;
 using Client.Models;
+using Client.Models.Forms;
 using Client.Services.Clients.Interfaces;
+using Client.Services.Interfaces;
 using Shared.Dto.Requests;
 using Shared.Dto.Responses;
 
@@ -13,8 +14,8 @@ namespace Client.Pages;
 public partial class Login : ComponentBase
 {
     [Inject] public required IApiClient ApiClient { get; set; }
-    [Inject] public required ICryptoHelper CryptoHelper { get; set; }
-    [Inject] public required ISignatureHelper SignatureHelper { get; set; }
+    [Inject] public required ICryptoService CryptoService { get; set; }
+    [Inject] public required ISignatureService SignatureService { get; set; }
     [Inject] public required ISessionStorageService SessionStorageService { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
 
@@ -53,7 +54,7 @@ public partial class Login : ComponentBase
                     await SessionStorageService.SetItemAsStringAsync("token",
                         apiLoginResponse.Data.Token);
 
-                    var encryptionKeyBytes = CryptoHelper.DeriveEncryptionKey(
+                    var encryptionKeyBytes = CryptoService.DeriveEncryptionKey(
                         Encoding.UTF8.GetBytes(_model.Password),
                         Convert.FromBase64String(apiLoginResponse.Data.EncryptionSaltBase64));
                     var encryptionKeyBase64 = Convert.ToBase64String(encryptionKeyBytes);
@@ -85,8 +86,8 @@ public partial class Login : ComponentBase
 
         var passwordBytes = Encoding.UTF8.GetBytes(_model.Password);
 
-        var keyPairBytes = SignatureHelper.GenerateKeyPair(passwordBytes, signatureSaltBytes);
+        var keyPairBytes = SignatureService.GenerateKeyPair(passwordBytes, signatureSaltBytes);
 
-        return Convert.ToBase64String(SignatureHelper.SignDetached(nonceBytes, keyPairBytes.PrivateKey));
+        return Convert.ToBase64String(SignatureService.SignDetached(nonceBytes, keyPairBytes.PrivateKey));
     }
 }

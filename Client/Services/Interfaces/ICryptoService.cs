@@ -1,6 +1,6 @@
-namespace Client.Helpers.Crypto.Interfaces;
+namespace Client.Services.Interfaces;
 
-public interface ICryptoHelper
+public interface ICryptoService
 {
     byte[] DeriveEncryptionKey(byte[] passwordBytes, byte[] saltBytes);
     byte[] GenerateSalt();

@@ -1,5 +1,5 @@
-using BusinessLogic.Helpers.Crypto.Interfaces;
 using BusinessLogic.Services;
+using Core.Abstractions.BusinessLogic.Services;
 using Core.Abstractions.DataAccess.Repositories;
 using Core.Abstractions.Infrastructure;
 using Core.Entities;
@@ -16,8 +16,8 @@ public class AuthServiceTests
 {
     private readonly Mock<IUserRepository> _mockUserRepository = new();
     private readonly Mock<IJwtService> _mockJwtService = new();
-    private readonly Mock<ICryptoHelper> _mockCryptoHelper = new();
-    private readonly Mock<ISignatureHelper> _mockSignatureHelper = new();
+    private readonly Mock<ICryptoService> _mockCryptoHelper = new();
+    private readonly Mock<ISignatureService> _mockSignatureHelper = new();
     private readonly Mock<ILogger<AuthService>> _mockLogger = new();
     private readonly MemoryCache _realCache = new(new MemoryCacheOptions());
 

@@ -1,6 +1,4 @@
 using System.Text;
-using BusinessLogic.Helpers.Crypto;
-using BusinessLogic.Helpers.Crypto.Interfaces;
 using BusinessLogic.Mapping;
 using BusinessLogic.Services;
 using Core.Abstractions.BusinessLogic.Services;
@@ -42,15 +40,13 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INoteService, NoteService>();
+builder.Services.AddSingleton<ICryptoService, CryptoService>();
+builder.Services.AddSingleton<ISignatureService, SignatureService>();
 
 //Service Infrastructure
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
-
-//Helper
-builder.Services.AddSingleton<ICryptoHelper, CryptoHelper>();
-builder.Services.AddSingleton<ISignatureHelper, SignatureHelper>();
 
 //Configurazione JWT
 var jwtSettingsConfigurationSection = builder.Configuration.GetSection("JwtSettings");

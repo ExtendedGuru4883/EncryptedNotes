@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text;
-using Client.Helpers.Crypto.Interfaces;
+using Client.Exceptions;
 using Client.Models;
 using Client.Services.Clients.Interfaces;
 using Client.Services.Interfaces;
@@ -14,9 +14,10 @@ namespace Client.Pages;
 public partial class Notes : ComponentBase
 {
     [Inject] public required IApiClient ApiClient { get; set; }
-    [Inject] public required ICryptoHelper CryptoHelper { get; set; }
+    [Inject] public required ICryptoService CryptoService { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
-    [Inject] public required IEncryptionKeyService EncryptionKeyService { get; set; }
+    [Inject] public required IEncryptionKeyRetrievalService EncryptionKeyRetrievalService { get; set; }
+    [Inject] public required INoteService NoteService { get; set; }
 
     private readonly List<NoteModel> _notes = [];
     private byte[]? _encryptionKeyBytes;
@@ -29,9 +30,10 @@ public partial class Notes : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        //TODO put LoadNotesAsync in INoteService and call it here removing the encryption key initialization
         try
         {
-            _encryptionKeyBytes = await EncryptionKeyService.TryGetKeyAsync();
+            _encryptionKeyBytes = await EncryptionKeyRetrievalService.TryGetKeyAsync();
             if (_encryptionKeyBytes is null)
             {
                 NavigationManager.NavigateTo("/login");
@@ -58,16 +60,15 @@ public partial class Notes : ComponentBase
         _awaitingDeletionNoteId = noteId;
         try
         {
-            var apiDeleteNoteResponse = await ApiClient.HandleDeleteWithAuthAsync($"notes/{noteId}");
-            if (apiDeleteNoteResponse.IsSuccess)
+            var result = await NoteService.DeleteNoteAsync(noteId);
+            if (result.IsSuccess)
             {
-                var removed = _notes.FirstOrDefault(n => n.Id == noteId);
-                if (removed != null) _notes.Remove(removed);
+                RemoveNoteFromLocalList(noteId);
                 return;
             }
 
             //!apiDeleteNoteResponse.IsSuccess;
-            _errors.Add(apiDeleteNoteResponse.ErrorMessage ?? "Unexpected error deleting note");
+            _errors.Add(result.ErrorMessage ?? "Unexpected error deleting note");
         }
         finally
         {
@@ -78,39 +79,25 @@ public partial class Notes : ComponentBase
 
     private async Task SubmitEdit(NoteModel note)
     {
-        if (_encryptionKeyBytes is null)
-        {
-            NavigationManager.NavigateTo("/login");
-            return;
-        }
         _errors.Clear();
         _awaitingUpdateNoteId = note.Id;
         
         try
         {
-            var encryptedTitleBytes =
-                CryptoHelper.Encrypt(Encoding.UTF8.GetBytes(note.Title), _encryptionKeyBytes);
-            var encryptedContentBytes =
-                CryptoHelper.Encrypt(Encoding.UTF8.GetBytes(note.Content), _encryptionKeyBytes);
-            
-            var updateNoteRequest = new UpdateNoteRequest()
+            var result = await NoteService.UpdateNoteAsync(note.Id, note.Title, note.Content);
+            if (result.IsSuccess)
             {
-                EncryptedTitleBase64 = Convert.ToBase64String(encryptedTitleBytes),
-                EncryptedContentBase64 = Convert.ToBase64String(encryptedContentBytes),
-            };
-
-            var apiAddNoteResponse =
-                await ApiClient.HandleJsonPutWithAuthAsync<NoteDto>($"notes/{note.Id}",
-                    JsonContent.Create(updateNoteRequest));
-
-            if (apiAddNoteResponse is { IsSuccess: true, Data: not null })
-            {
-                note.TimeStamp = apiAddNoteResponse.Data.TimeStamp;
+                note.TimeStamp = result.Data?.TimeStamp ?? DateTime.Now;
                 return;
             }
 
-            //!apiLoginResponse.IsSuccess
-            _errors.Add(apiAddNoteResponse.ErrorMessage ?? "Unexpected error during note edit");
+            _errors.Add((string.IsNullOrEmpty(result.ErrorMessage)
+                ? "Unexpected error updating note"
+                : result.ErrorMessage));
+        }
+        catch (EncryptionKeyMissingException)
+        {
+            NavigationManager.NavigateTo("/login");
         }
         finally
         {
@@ -147,10 +134,10 @@ public partial class Notes : ComponentBase
             var pageNotes = apiGetNotesResponse.Data.Items.Select(n => new NoteModel
             {
                 Id = n.Id,
-                Title = Encoding.UTF8.GetString(CryptoHelper.Decrypt(
+                Title = Encoding.UTF8.GetString(CryptoService.Decrypt(
                     Convert.FromBase64String(n.EncryptedTitleBase64),
                     _encryptionKeyBytes)),
-                Content = Encoding.UTF8.GetString(CryptoHelper.Decrypt(
+                Content = Encoding.UTF8.GetString(CryptoService.Decrypt(
                     Convert.FromBase64String(n.EncryptedContentBase64),
                     _encryptionKeyBytes)),
                 TimeStamp = n.TimeStamp
@@ -183,5 +170,11 @@ public partial class Notes : ComponentBase
             queryString.Remove(queryString.Length - 1, 1);
 
         return queryString.ToString();
+    }
+
+    private void RemoveNoteFromLocalList(Guid noteId)
+    {
+        var removed = _notes.FirstOrDefault(n => n.Id == noteId);
+        if (removed != null) _notes.Remove(removed);
     }
 }

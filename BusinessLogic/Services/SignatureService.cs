@@ -1,9 +1,9 @@
-using BusinessLogic.Helpers.Crypto.Interfaces;
+using Core.Abstractions.BusinessLogic.Services;
 using Sodium;
 
-namespace BusinessLogic.Helpers.Crypto;
+namespace BusinessLogic.Services;
 
-public class SignatureHelper : ISignatureHelper
+public class SignatureService : ISignatureService
 {
     public int PublicKeyBytesSize => PublicKeyAuth.PublicKeyBytes;
     public int PublicKeyBase64Length => (int)(4 * Math.Ceiling((double)PublicKeyBytesSize / 3));

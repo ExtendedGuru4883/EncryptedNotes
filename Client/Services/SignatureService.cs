@@ -1,12 +1,12 @@
 using System.Runtime.Versioning;
 using BlazorSodium.Sodium;
 using BlazorSodium.Sodium.Models;
-using Client.Helpers.Crypto.Interfaces;
+using Client.Services.Interfaces;
 
-namespace Client.Helpers.Crypto;
+namespace Client.Services;
 
 [SupportedOSPlatform("browser")]
-public class SignatureHelper : ISignatureHelper
+public class SignatureService : ISignatureService
 {
     public Ed25519KeyPair GenerateKeyPair(byte[] passwordBytes, byte[] saltBytes)
     {

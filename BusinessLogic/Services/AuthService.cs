@@ -1,4 +1,3 @@
-using BusinessLogic.Helpers.Crypto.Interfaces;
 using Core.Abstractions.BusinessLogic.Services;
 using Core.Abstractions.DataAccess.Repositories;
 using Core.Abstractions.Infrastructure;
@@ -14,8 +13,8 @@ namespace BusinessLogic.Services;
 public class AuthService(
     IUserRepository userRepository,
     IJwtService jwtService,
-    ICryptoHelper cryptoHelper,
-    ISignatureHelper signatureHelper,
+    ICryptoService cryptoService,
+    ISignatureService signatureService,
     IMemoryCache cache,
     ILogger<AuthService> logger) : IAuthService
 {
@@ -32,7 +31,7 @@ public class AuthService(
 
         logger.LogInformation("Retrieved signature salt for user {username}", username);
 
-        var nonce = Convert.ToBase64String(cryptoHelper.GetRandomBytes(32));
+        var nonce = Convert.ToBase64String(cryptoService.GetRandomBytes(32));
         var challengeResponse = new ChallengeResponse()
         {
             SignatureSaltBase64 = signatureSalt,
@@ -47,7 +46,7 @@ public class AuthService(
 
     public async Task<ServiceResult<LoginResponse>> Login(LoginRequest loginRequest)
     {
-        if (loginRequest.NonceSignatureBase64.Length != signatureHelper.SignatureBase64Length)
+        if (loginRequest.NonceSignatureBase64.Length != signatureService.SignatureBase64Length)
         {
             logger.LogInformation(
                 "Login for user {username} failed with bad request: invalid signature size",
@@ -87,7 +86,7 @@ public class AuthService(
         var nonceBytes = Convert.FromBase64String(cachedNonceBase64);
         var publicKeyBytes = Convert.FromBase64String(userEntity.PublicKeyBase64);
 
-        if (!signatureHelper.VerifyDetachedSignature(signatureBytes,
+        if (!signatureService.VerifyDetachedSignature(signatureBytes,
                 nonceBytes, publicKeyBytes))
         {
             logger.LogInformation(

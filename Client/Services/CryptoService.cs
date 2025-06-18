@@ -1,11 +1,11 @@
 using System.Runtime.Versioning;
 using BlazorSodium.Sodium;
-using Client.Helpers.Crypto.Interfaces;
+using Client.Services.Interfaces;
 
-namespace Client.Helpers.Crypto;
+namespace Client.Services;
 
 [SupportedOSPlatform("browser")]
-public class CryptoHelper : ICryptoHelper
+public class CryptoService : ICryptoService
 {
     public byte[] DeriveEncryptionKey(byte[] passwordBytes, byte[] saltBytes)
     {

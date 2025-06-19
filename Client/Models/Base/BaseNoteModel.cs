@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Client.Models.Forms;
+namespace Client.Models.Base;
 
-public class AddNoteFormModel
+public class BaseNoteModel
 {
     [Required(ErrorMessage = "Title is required")]
     [StringLength(100, ErrorMessage = "Title cannot exceed 100 characters")]

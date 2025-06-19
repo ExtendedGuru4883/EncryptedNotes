@@ -1,5 +1,6 @@
 using Client.Exceptions;
 using Client.Models;
+using Client.Models.Forms;
 using Client.Services.Interfaces;
 using Microsoft.AspNetCore.Components;
 
@@ -63,18 +64,23 @@ public partial class Notes : ComponentBase
         }
     }
 
-    private async Task SubmitEdit(NoteModel note)
+    private async Task SubmitEdit(NoteFormModel note, Guid noteId)
     {
         _errors.Clear();
-        _awaitingUpdateNoteId = note.Id;
+        _awaitingUpdateNoteId = noteId;
         await Task.Yield();
         
         try
         {
-            var result = await NoteService.UpdateNoteAsync(note.Id, note.Title, note.Content);
+            var result = await NoteService.UpdateNoteAsync(noteId, note.Title, note.Content);
             if (result.IsSuccess)
             {
-                note.TimeStamp = result.Data?.TimeStamp ?? DateTime.Now;
+                var editedNote = _notes.FirstOrDefault(n => n.Id == noteId);
+                if (editedNote == null) return;
+                
+                editedNote.Title = note.Title;
+                editedNote.Content = note.Content;
+                editedNote.TimeStamp = DateTime.UtcNow;
                 return;
             }
 

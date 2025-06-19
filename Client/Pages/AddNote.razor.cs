@@ -10,7 +10,7 @@ public partial class AddNote : ComponentBase
     [Inject] public required NavigationManager NavigationManager { get; set; }
     [Inject] public required INoteService NoteService { get; set; }
 
-    private readonly AddNoteFormModel _model = new();
+    private readonly NoteFormModel _model = new();
     private readonly List<string> _errors = [];
     private bool _isLoading;
 

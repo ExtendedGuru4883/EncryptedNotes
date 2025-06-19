@@ -1,20 +1,17 @@
 using System.ComponentModel.DataAnnotations;
+using Shared.Dto.Requests.Auth.Base;
 using Shared.Validations;
 
 namespace Shared.Dto.Requests.Auth;
 
-public record LoginRequest
+public record LoginRequest : BaseAuthRequest
 {
-    [Required]
-    [RegularExpression("^[a-zA-Z0-9]*$", ErrorMessage = "Username must be alphanumeric")]
-    [MaxLength(32, ErrorMessage = "Username cannot exceed 32 characters")]
-    public required string Username { get; set; }
     [Required]
     [ValidBase64]
     [MaxLength(256, ErrorMessage = "Nonce in base64 cannot exceed 256 characters")]
-    public required string NonceBase64 { get; set; }
+    public required string NonceBase64 { get; init; }
     [Required]
     [ValidBase64]
     [MaxLength(256, ErrorMessage = "Nonce signature in base64 cannot exceed 256 characters")]
-    public required string NonceSignatureBase64 { get; set; }
+    public required string NonceSignatureBase64 { get; init; }
 }

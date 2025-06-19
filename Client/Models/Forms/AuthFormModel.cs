@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Client.Models.Forms;
 
-public class AuthFormModel
+public record AuthFormModel
 {
     [Required(ErrorMessage = "Username is required")]
     [RegularExpression("^[a-zA-Z0-9]*$", ErrorMessage = "Username must be alphanumeric")]

@@ -9,7 +9,7 @@ public partial class Login : ComponentBase
     [Inject] public required NavigationManager NavigationManager { get; set; }
     [Inject] public required IAuthService AuthService { get; set; }
 
-    private readonly LoginFormModel _model = new();
+    private readonly AuthFormModel _model = new();
     private readonly List<string> _errors = [];
     private bool _isLoading;
 

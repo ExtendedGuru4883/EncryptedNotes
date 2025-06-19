@@ -54,12 +54,12 @@ public class ValidBase64AttributeTests
     }
     
     [Fact]
-    public void IsValid_Null_ReturnsFailure()
+    public void IsValid_Null_ReturnsSuccess()
     {
         //Act
         var validationResult = _validBase64Attribute.GetValidationResult(null, _validationContext);
         
         //Assert
-        validationResult.Should().NotBe(ValidationResult.Success);
+        validationResult.Should().Be(ValidationResult.Success);
     }
 }

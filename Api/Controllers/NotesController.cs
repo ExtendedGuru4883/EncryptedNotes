@@ -5,7 +5,6 @@ using EncryptedNotes.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
-using Shared.Dto.Requests;
 using Shared.Dto.Requests.Notes;
 using Shared.Dto.Responses;
 

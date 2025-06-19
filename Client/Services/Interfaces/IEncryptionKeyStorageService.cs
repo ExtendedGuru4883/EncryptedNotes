@@ -1,6 +1,6 @@
 namespace Client.Services.Interfaces;
 
-public interface IEncryptionKeyRetrievalService
+public interface IEncryptionKeyStorageService
 {
     Task<byte[]?> TryGetKeyAsync();
     Task<byte[]> GetKeyOrThrowAsync();

@@ -15,8 +15,9 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5207/api/") });
 builder.Services.AddScoped<IApiClient, ApiClient>();
 
-builder.Services.AddScoped<IEncryptionKeyRetrievalService, EncryptionKeyRetrievalService>();
+builder.Services.AddScoped<IEncryptionKeyStorageService, EncryptionKeyStorageService>();
 builder.Services.AddScoped<INoteService, NoteService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 #pragma warning disable CA1416
 builder.Services.AddScoped<ISignatureService, SignatureService>();
 builder.Services.AddScoped<ICryptoService, CryptoService>();

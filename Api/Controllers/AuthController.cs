@@ -4,7 +4,6 @@ using Core.Abstractions.BusinessLogic.Services;
 using EncryptedNotes.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
-using Shared.Dto.Requests;
 using Shared.Dto.Requests.Auth;
 using Shared.Dto.Responses;
 

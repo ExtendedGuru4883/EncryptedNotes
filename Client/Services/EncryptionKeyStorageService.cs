@@ -4,7 +4,7 @@ using Client.Services.Interfaces;
 
 namespace Client.Services;
 
-public class EncryptionKeyRetrievalService(ISessionStorageService sessionStorageService) : IEncryptionKeyRetrievalService
+public class EncryptionKeyStorageService(ISessionStorageService sessionStorageService) : IEncryptionKeyStorageService
 {
     public async Task<byte[]?> TryGetKeyAsync()
     {

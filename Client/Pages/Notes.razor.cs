@@ -40,6 +40,8 @@ public partial class Notes : ComponentBase
         }
 
         _awaitingDeletionNoteId = noteId;
+        await Task.Yield();
+        
         try
         {
             var result = await NoteService.DeleteNoteAsync(noteId);
@@ -65,7 +67,8 @@ public partial class Notes : ComponentBase
     {
         _errors.Clear();
         _awaitingUpdateNoteId = note.Id;
-
+        await Task.Yield();
+        
         try
         {
             var result = await NoteService.UpdateNoteAsync(note.Id, note.Title, note.Content);

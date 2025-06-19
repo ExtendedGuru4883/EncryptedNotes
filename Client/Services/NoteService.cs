@@ -13,7 +13,7 @@ using Shared.Dto.Responses;
 namespace Client.Services;
 
 public class NoteService(
-    IEncryptionKeyRetrievalService encryptionKeyRetrievalService,
+    IEncryptionKeyStorageService encryptionKeyStorageService,
     ICryptoService cryptoService,
     IApiClient apiClient)
     : INoteService
@@ -21,7 +21,7 @@ public class NoteService(
     public async Task<ServiceResult<NoteModel>> AddNoteAsync(string title, string content)
     {
         //This throws EncryptionKeyMissingException
-        var encryptionKeyBytes = await encryptionKeyRetrievalService.GetKeyOrThrowAsync();
+        var encryptionKeyBytes = await encryptionKeyStorageService.GetKeyOrThrowAsync();
 
         var encryptedTitleBytes =
             cryptoService.Encrypt(Encoding.UTF8.GetBytes(title), encryptionKeyBytes);
@@ -48,7 +48,7 @@ public class NoteService(
     public async Task<ServiceResult<NoteModel>> UpdateNoteAsync(Guid id, string title, string content)
     {
         //This throws EncryptionKeyMissingException
-        var encryptionKeyBytes = await encryptionKeyRetrievalService.GetKeyOrThrowAsync();
+        var encryptionKeyBytes = await encryptionKeyStorageService.GetKeyOrThrowAsync();
 
         var encryptedTitleBytes =
             cryptoService.Encrypt(Encoding.UTF8.GetBytes(title), encryptionKeyBytes);
@@ -86,7 +86,7 @@ public class NoteService(
     public async Task<ServiceResult<(List<NoteModel> notes, bool hasMore)>> GetNotesPageAsync(int page, int pageSize)
     {
         //This throws EncryptionKeyMissingException
-        var encryptionKeyBytes = await encryptionKeyRetrievalService.GetKeyOrThrowAsync();
+        var encryptionKeyBytes = await encryptionKeyStorageService.GetKeyOrThrowAsync();
 
         var queryString = QueryStringHelper.ToQueryString(new PaginatedNotesRequest
         {

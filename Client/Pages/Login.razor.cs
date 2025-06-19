@@ -27,6 +27,7 @@ public partial class Login : ComponentBase
     {
         _errors.Clear();
         _isLoading = true;
+        await Task.Yield();
 
         try
         {

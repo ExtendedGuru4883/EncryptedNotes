@@ -1,4 +1,3 @@
 - Centralize model conversions in client: NoteDto <=> NoteModel and AddNoteFormModel <=> NoteModel
 - Create a model for the note update form, stop using NoteModel in form binding
-- Create AuthService in client to encapsulate login and signup logic in service layer
 - UI

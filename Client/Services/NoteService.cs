@@ -6,7 +6,6 @@ using Client.Models.Results;
 using Client.Services.Clients.Interfaces;
 using Client.Services.Interfaces;
 using Shared.Dto;
-using Shared.Dto.Requests;
 using Shared.Dto.Requests.Notes;
 using Shared.Dto.Responses;
 
@@ -38,11 +37,10 @@ public class NoteService(
             await apiClient.HandleJsonPostWithAuthAsync<NoteDto>("notes",
                 JsonContent.Create(request));
 
-        if (apiResponse is { IsSuccess: true, Data: not null })
-            return ServiceResult<NoteModel>.Success(DtoToModel(apiResponse.Data, encryptionKeyBytes));
-
-        return ServiceResult<NoteModel>.Failure(
-            apiResponse.ErrorMessage ?? "Unexpected error during note creation");
+        return apiResponse is { IsSuccess: true, Data: not null }
+            ? ServiceResult<NoteModel>.Success(DtoToModel(apiResponse.Data, encryptionKeyBytes))
+            : ServiceResult<NoteModel>.Failure(
+                apiResponse.ErrorMessage ?? "Unexpected error during note creation");
     }
 
     public async Task<ServiceResult<NoteModel>> UpdateNoteAsync(Guid id, string title, string content)
@@ -65,11 +63,10 @@ public class NoteService(
             await apiClient.HandleJsonPutWithAuthAsync<NoteDto>($"notes/{id}",
                 JsonContent.Create(request));
 
-        if (apiResponse is { IsSuccess: true, Data: not null })
-            return ServiceResult<NoteModel>.Success(DtoToModel(apiResponse.Data, encryptionKeyBytes));
-
-        return ServiceResult<NoteModel>.Failure(
-            apiResponse.ErrorMessage ?? "Unexpected error updating note");
+        return apiResponse is { IsSuccess: true, Data: not null }
+            ? ServiceResult<NoteModel>.Success(DtoToModel(apiResponse.Data, encryptionKeyBytes))
+            : ServiceResult<NoteModel>.Failure(
+                apiResponse.ErrorMessage ?? "Unexpected error updating note");
     }
 
     public async Task<ServiceResult> DeleteNoteAsync(Guid id)
@@ -98,13 +95,12 @@ public class NoteService(
             await apiClient.HandleJsonGetWithAuthAsync<PaginatedResponse<NoteDto>>(
                 $"notes?{queryString}");
 
-        if (apiResponse is not { IsSuccess: true, Data: not null })
-            return ServiceResult<(List<NoteModel>, bool)>.Failure(
+        return apiResponse is { IsSuccess: true, Data: not null }
+            ? ServiceResult<(List<NoteModel> notes, bool hasMore)>.Success((
+                apiResponse.Data.Items.Select(n => DtoToModel(n, encryptionKeyBytes)).ToList(),
+                apiResponse.Data.HasMore))
+            : ServiceResult<(List<NoteModel>, bool)>.Failure(
                 apiResponse.ErrorMessage ?? "Unexpected error during note creation");
-
-        //apiResponse is IsSuccess true and Data not null
-        var notes = apiResponse.Data.Items.Select(n => DtoToModel(n, encryptionKeyBytes)).ToList();
-        return ServiceResult<(List<NoteModel> notes, bool hasMore)>.Success((notes, apiResponse.Data.HasMore));
     }
 
     private NoteModel DtoToModel(NoteDto dto, byte[] encryptionKeyBytes)

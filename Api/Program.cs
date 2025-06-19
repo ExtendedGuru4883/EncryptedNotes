@@ -48,7 +48,7 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
 
-//Configurazione JWT
+//JWT configuration
 var jwtSettingsConfigurationSection = builder.Configuration.GetSection("JwtSettings");
 builder.Services
     .AddOptions<JwtSettings>()
@@ -74,10 +74,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+//CORS configuration
+const string frontendCorsName = "AllowFrontend";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: frontendCorsName,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5291",
+                "https://localhost:7008")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 //Build
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseCors(frontendCorsName);
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 

@@ -1,3 +1,2 @@
 - Centralize model conversions in client: NoteDto <=> NoteModel and AddNoteFormModel <=> NoteModel and UpdateNoteFormModel <=> NoteModel
-- Move the update note form in its own element, remove it from inside the note list (careful not to break in-memory note update)
 - UI

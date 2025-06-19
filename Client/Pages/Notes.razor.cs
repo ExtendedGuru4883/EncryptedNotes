@@ -1,6 +1,5 @@
 using Client.Exceptions;
 using Client.Models;
-using Client.Models.Forms;
 using Client.Services.Interfaces;
 using Microsoft.AspNetCore.Components;
 
@@ -17,7 +16,7 @@ public partial class Notes : ComponentBase
     private bool _loadingNotes = true;
     private Guid _askConfirmDeletionNoteId = Guid.Empty;
     private Guid _awaitingDeletionNoteId = Guid.Empty;
-    private Guid _awaitingUpdateNoteId = Guid.Empty;
+    private NoteModel? _shownEditableNote;
 
     protected override async Task OnInitializedAsync()
     {
@@ -64,40 +63,6 @@ public partial class Notes : ComponentBase
         }
     }
 
-    private async Task SubmitEdit(NoteFormModel note, Guid noteId)
-    {
-        _errors.Clear();
-        _awaitingUpdateNoteId = noteId;
-        await Task.Yield();
-        
-        try
-        {
-            var result = await NoteService.UpdateNoteAsync(noteId, note.Title, note.Content);
-            if (result.IsSuccess)
-            {
-                var editedNote = _notes.FirstOrDefault(n => n.Id == noteId);
-                if (editedNote == null) return;
-                
-                editedNote.Title = note.Title;
-                editedNote.Content = note.Content;
-                editedNote.TimeStamp = DateTime.UtcNow;
-                return;
-            }
-
-            _errors.Add((string.IsNullOrEmpty(result.ErrorMessage)
-                ? "Unexpected error updating note"
-                : result.ErrorMessage));
-        }
-        catch (EncryptionKeyMissingException)
-        {
-            NavigationManager.NavigateTo("/login");
-        }
-        finally
-        {
-            _awaitingUpdateNoteId = Guid.Empty;
-        }
-    }
-
     private async Task LoadNotesAsync()
     {
         var page = 1;
@@ -137,4 +102,7 @@ public partial class Notes : ComponentBase
         var removed = _notes.FirstOrDefault(n => n.Id == noteId);
         if (removed != null) _notes.Remove(removed);
     }
+    
+    private void OpenEditableNote(NoteModel note) => _shownEditableNote = note;
+    private void CloseEditableNote() => _shownEditableNote = null;
 }

@@ -1,5 +1,5 @@
 @page "/Notes"
-@using Client.Models.Forms
+@using Client.Shared
 <h3>Notes</h3>
 
 <ul>
@@ -10,34 +10,33 @@
 </ul>
 
 <Virtualize Items="_notes" Context="note">
-    @*TODO: this form should be on its own with model NoteFormModel, not inside the list with model NoteModel*@
-    <EditForm OnValidSubmit="() => SubmitEdit(new NoteFormModel{Title = note.Title, Content = note.Content}, note.Id)"
-              Model="note">
-        <DataAnnotationsValidator/>
-        <div @key="note.Id" class="card mb-3">
-            <div class="card-header">
-                <InputTextArea @bind-Value="note.Title" placeholder="Title"/>
-                <ValidationMessage For="@(() => note.Title)"/>
-            </div>
-            <div class="card-body">
-                <InputTextArea @bind-Value="note.Content" placeholder="Content"/>
-                <ValidationMessage For="@(() => note.Content)"/>
-            </div>
-            <div class="card-footer">
-                <div>@note.TimeStamp</div>
-                <button type="submit" class="btn-primary" disabled="@(_awaitingUpdateNoteId != Guid.Empty)">
-                    @(_awaitingUpdateNoteId == note.Id ? "Updating..." : "Save")
-                </button>
-                <button type="button" class="btn-danger" @onclick="() => DeleteNoteAsync(note.Id)"
-                        disabled="@(_awaitingDeletionNoteId != Guid.Empty)">
-                    @(_askConfirmDeletionNoteId == note.Id
-                        ? _awaitingDeletionNoteId == note.Id ? "Deleting..." : "Confirm?"
-                        : "Delete")
-                </button>
-            </div>
+    <div @key="note.Id" class="card mb-3">
+        <div class="card-header">@note.Title</div>
+        <div class="card-body">@note.Content</div>
+        <div class="card-footer">
+            <div>@note.TimeStamp</div>
+            <button type="button" class="btn-danger" @onclick="() => DeleteNoteAsync(note.Id)"
+                    disabled="@(_awaitingDeletionNoteId != Guid.Empty)">
+                @(_askConfirmDeletionNoteId == note.Id
+                    ? _awaitingDeletionNoteId == note.Id 
+                        ? "Deleting..." : "Confirm?"
+                    : "Delete")
+            </button>
+            <button type="button" class="btn-primary" @onclick="() => OpenEditableNote(note)">
+                Edit
+            </button>
         </div>
-    </EditForm>
+    </div>
 </Virtualize>
+
+@if (_shownEditableNote is not null)
+{
+    <div class="popup-overlay">
+        <div class="popup-content">
+            <EditableNote Note="_shownEditableNote" OnClose="CloseEditableNote"></EditableNote>
+        </div>
+    </div>
+}
 
 @if (_loadingNotes)
 {

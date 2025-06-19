@@ -22,16 +22,7 @@ public class NoteService(
         //This throws EncryptionKeyMissingException
         var encryptionKeyBytes = await encryptionKeyStorageService.GetKeyOrThrowAsync();
 
-        var encryptedTitleBytes =
-            cryptoService.Encrypt(Encoding.UTF8.GetBytes(title), encryptionKeyBytes);
-        var encryptedContentBytes =
-            cryptoService.Encrypt(Encoding.UTF8.GetBytes(content), encryptionKeyBytes);
-
-        var request = new UpsertNoteRequest
-        {
-            EncryptedTitleBase64 = Convert.ToBase64String(encryptedTitleBytes),
-            EncryptedContentBase64 = Convert.ToBase64String(encryptedContentBytes),
-        };
+        var request = CreateUpsertNoteRequest(title, content, encryptionKeyBytes);
 
         var apiResponse =
             await apiClient.HandleJsonPostWithAuthAsync<NoteDto>("notes",
@@ -48,16 +39,7 @@ public class NoteService(
         //This throws EncryptionKeyMissingException
         var encryptionKeyBytes = await encryptionKeyStorageService.GetKeyOrThrowAsync();
 
-        var encryptedTitleBytes =
-            cryptoService.Encrypt(Encoding.UTF8.GetBytes(title), encryptionKeyBytes);
-        var encryptedContentBytes =
-            cryptoService.Encrypt(Encoding.UTF8.GetBytes(content), encryptionKeyBytes);
-
-        var request = new UpsertNoteRequest()
-        {
-            EncryptedTitleBase64 = Convert.ToBase64String(encryptedTitleBytes),
-            EncryptedContentBase64 = Convert.ToBase64String(encryptedContentBytes),
-        };
+        var request = CreateUpsertNoteRequest(title, content, encryptionKeyBytes);
 
         var apiResponse =
             await apiClient.HandleJsonPutWithAuthAsync<NoteDto>($"notes/{id}",
@@ -115,6 +97,17 @@ public class NoteService(
                 Convert.FromBase64String(dto.EncryptedContentBase64),
                 encryptionKeyBytes)),
             TimeStamp = dto.TimeStamp
+        };
+    }
+
+    private UpsertNoteRequest CreateUpsertNoteRequest(string title, string content, byte[] encryptionKeyBytes)
+    {
+        return new UpsertNoteRequest
+        {
+            EncryptedTitleBase64 =
+                Convert.ToBase64String(cryptoService.Encrypt(Encoding.UTF8.GetBytes(title), encryptionKeyBytes)),
+            EncryptedContentBase64 =
+                Convert.ToBase64String(cryptoService.Encrypt(Encoding.UTF8.GetBytes(content), encryptionKeyBytes)),
         };
     }
 }

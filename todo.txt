@@ -1,2 +1,0 @@
-- Centralize model conversions in client: NoteDto <=> NoteModel and AddNoteFormModel <=> NoteModel and UpdateNoteFormModel <=> NoteModel
-- UI

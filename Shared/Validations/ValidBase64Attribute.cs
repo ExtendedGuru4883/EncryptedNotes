@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Shared.Validations;
 
-public class ValidBase64Attribute() : ValidationAttribute
+public class ValidBase64Attribute : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {

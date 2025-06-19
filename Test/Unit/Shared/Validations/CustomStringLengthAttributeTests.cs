@@ -82,11 +82,6 @@ public class CustomStringLengthAttributeTests
     {
         //Arrange
         CustomStringLengthAttribute customStringLengthAttribute = new(MaxLength);
-    
-        ValidationContext validationContext = new (new{})
-        {
-            DisplayName = "test"
-        };
         var emptyString = string.Empty;
         
         //Act
@@ -105,7 +100,7 @@ public class CustomStringLengthAttributeTests
         //Act
         try
         {
-            CustomStringLengthAttribute customStringLengthAttribute = new(minLength: 10, maxLength: 5);
+            _ = new CustomStringLengthAttribute (minLength: 10, maxLength: 5);
         }
         catch (ArgumentException)
         {

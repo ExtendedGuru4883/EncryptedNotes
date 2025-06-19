@@ -31,6 +31,8 @@ public class AuthService(
 
         logger.LogInformation("Retrieved signature salt for user {username}", username);
 
+        //Note: the login request can carry a nonce at most AuthConstants.Base64NonceMaxLength long
+        //So never generate a nonce longer than the constant (or change the constant value)
         var nonce = Convert.ToBase64String(cryptoService.GetRandomBytes(32));
         var challengeResponse = new ChallengeResponse()
         {
@@ -51,10 +53,11 @@ public class AuthService(
             logger.LogInformation(
                 "Login for user {username} failed with bad request: invalid signature size",
                 loginRequest.Username);
-            return ServiceResult<LoginResponse>.Failure("Challenge failed: invalid signature size",
+            return ServiceResult<LoginResponse>.Failure(
+                $"Challenge failed: invalid signature size. Base64 signature size must be {signatureService.SignatureBase64Length} characters",
                 ServiceResultErrorType.BadRequest);
         }
-        
+
         var signatureBytes = Convert.FromBase64String(loginRequest.NonceSignatureBase64);
 
         if (!cache.TryGetValue($"nonceBase64:{loginRequest.Username}", out string? cachedNonceBase64) ||

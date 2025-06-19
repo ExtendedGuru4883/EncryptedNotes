@@ -1,16 +1,19 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using Shared.Constants;
 using Shared.Validations;
 
 namespace Shared.Dto.Requests.Notes;
 
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public record UpsertNoteRequest
 {
     [Required]
     [ValidBase64]
-    [StringLength(256, ErrorMessage = "Encrypted title in base 64 cannot exceed 256 characters")]
+    [CustomStringLength(NoteConstants.EncryptedTitleBase64MaxLength, 1)]
     public required string EncryptedTitleBase64 { get; init; }
     [Required]
     [ValidBase64]
-    [StringLength(2048, ErrorMessage = "Encrypted content in base 64 cannot exceed 2048 characters")]
+    [CustomStringLength(NoteConstants.EncryptedContentBase64MaxLength, 1)]
     public required string EncryptedContentBase64 { get; init; }
 }

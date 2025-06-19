@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Shared.Constants;
 using Shared.Dto.Requests.Auth.Base;
 using Shared.Validations;
 
@@ -10,14 +11,14 @@ public record SignupRequest : BaseAuthRequest
 {
     [Required]
     [ValidBase64]
-    [MaxLength(256, ErrorMessage = "Signature salt in base64 cannot exceed 256 characters")]
+    [CustomStringLength(AuthConstants.SignatureSaltBase64MaxLength, 1)]
     public required string SignatureSaltBase64 { get; init; }
     [Required]
     [ValidBase64]
-    [MaxLength(256, ErrorMessage = "Encryption salt in base64 cannot exceed 256 characters")]
+    [CustomStringLength(AuthConstants.EncryptionSaltBase64MaxLength, 1)]
     public required string EncryptionSaltBase64 { get; init; }
     [Required]
     [ValidBase64]
-    [MaxLength(256, ErrorMessage = "Public key in base64 cannot exceed 256 characters")]
+    [CustomStringLength(AuthConstants.PublicKeyBase64MaxLength, 1)]
     public required string PublicKeyBase64 { get; init; }
 }

@@ -21,13 +21,17 @@ public class UserService(
     {
         if (userDto.PublicKeyBase64.Length != signatureService.PublicKeyBase64Length)
         {
-            logger.LogInformation("Adding new user {username} failed with bad request: invalid public key size", userDto.Username);
-            return ServiceResult<UserDto>.Failure("Invalid public key size", ServiceResultErrorType.BadRequest);
+            logger.LogInformation("Adding new user {username} failed with bad request: invalid public key size",
+                userDto.Username);
+            return ServiceResult<UserDto>.Failure(
+                $"Invalid public key size. Base64 key size must be {signatureService.PublicKeyBase64Length} characters",
+                ServiceResultErrorType.BadRequest);
         }
-        
+
         if (await userRepository.UsernameExistsAsync(userDto.Username))
         {
-            logger.LogInformation("Adding new user {username} failed  with conflict: username already exists", userDto.Username);
+            logger.LogInformation("Adding new user {username} failed  with conflict: username already exists",
+                userDto.Username);
             return ServiceResult<UserDto>.Failure("Username already exists", ServiceResultErrorType.Conflict);
         }
 
@@ -54,7 +58,7 @@ public class UserService(
             return ServiceResult.Failure("User not found",
                 ServiceResultErrorType.NotFound);
         }
-        
+
         logger.LogInformation(
             "Deleting current user {UserId} succeeded", currentUserGuid);
         return ServiceResult.SuccessNoContent();

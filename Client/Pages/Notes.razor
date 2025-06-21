@@ -31,11 +31,9 @@
 
 @if (_shownEditableNote is not null)
 {
-    <div class="popup-overlay">
-        <div class="popup-content">
-            <EditableNote Note="_shownEditableNote" OnClose="CloseEditableNote"></EditableNote>
-        </div>
-    </div>
+    <FluentDialog>
+        <EditableNote Note="_shownEditableNote" OnClose="CloseEditableNote"></EditableNote>
+    </FluentDialog>
 }
 
 @if (_loadingNotes)

@@ -1,27 +1,26 @@
-<ul>
-    @foreach (var error in _errors)
-    {
-        <li class="text-danger">@error</li>
-    }
-</ul>
-
-<div class="card mb-3">
     <EditForm OnValidSubmit="() => SubmitEdit(_noteFormModel)" Model="_noteFormModel">
         <DataAnnotationsValidator/>
-        <div class="card-header">
-            <InputTextArea @bind-Value="_noteFormModel.Title" placeholder="Title"/>
+        
+        @foreach (var error in _errors)
+        {
+            <div class="text-danger">@error</div>
+        }
+        
+        <FluentStack Orientation="Orientation.Vertical">
+        <div>
+            <FluentTextArea @bind-Value="_noteFormModel.Title" placeholder="Title"/>
             <ValidationMessage For="@(() => _noteFormModel.Title)"/>
         </div>
-        <div class="card-body">
-            <InputTextArea @bind-Value="_noteFormModel.Content" placeholder="Content"/>
+        <div>
+            <FluentTextArea @bind-Value="_noteFormModel.Content" placeholder="Content"/>
             <ValidationMessage For="@(() => _noteFormModel.Content)"/>
         </div>
-        <div class="card-footer">
+        <div>
             <div>@Note.TimeStamp</div>
-            <button type="submit" class="btn-primary" disabled="@_isLoading">
+            <FluentButton Appearance="Appearance.Accent" Type="ButtonType.Submit" disabled="@_isLoading">
                 @(_isLoading ? "Updating..." : "Save")
-            </button>
-            <button type="button" class="btn-primary" @onclick="HandleClose">Close</button>
+            </FluentButton>
+            <FluentButton Appearance="Appearance.Accent" Type="ButtonType.Button" @onclick="HandleClose">Close</FluentButton>
         </div>
+        </FluentStack>
     </EditForm>
-</div>

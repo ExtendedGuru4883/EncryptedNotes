@@ -8,7 +8,7 @@ namespace Client.Shared;
 
 public partial class EditableNote : ComponentBase
 {
-    [Parameter] public required EventCallback OnClose { get; set; }
+    [Parameter] public required EventCallback<NoteModel?> OnClose { get; set; }
     [Parameter] public required NoteModel Note { get; set; }
     [Inject] public required INoteService NoteService { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
@@ -35,9 +35,7 @@ public partial class EditableNote : ComponentBase
             var result = await NoteService.UpdateNoteAsync(Note.Id, noteForm.Title, noteForm.Content);
             if (result is { IsSuccess: true, Data: not null })
             {
-                Note.Title = result.Data.Title;
-                Note.Content = result.Data.Content;
-                Note.TimeStamp = result.Data.TimeStamp;
+                await OnClose.InvokeAsync(result.Data);
                 return;
             }
 
@@ -55,5 +53,5 @@ public partial class EditableNote : ComponentBase
         }
     }
 
-    private void HandleClose() => OnClose.InvokeAsync();
+    private void HandleClose() => OnClose.InvokeAsync(null);
 }

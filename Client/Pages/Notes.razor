@@ -1,7 +1,11 @@
 @page "/Notes"
 @using System.Globalization
 @using Client.Shared
+
+<FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween" class="mb-3">
 <h3>Your notes</h3>
+<FluentButton Appearance="Appearance.Accent" @onclick="HandleOpenAddNote">Add new note</FluentButton>
+</FluentStack>
 
 @foreach (var error in _errors)
 {
@@ -17,7 +21,7 @@
             <FluentDivider Style="width: 100%;"></FluentDivider>
             <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
                 <div>
-                    <FluentButton Appearance="Appearance.Accent" @onclick="() => OpenEditableNote(note)">
+                    <FluentButton Appearance="Appearance.Accent" @onclick="() => HandleOpenEditableNote(note)">
                         Edit
                     </FluentButton>
                     <FluentButton BackgroundColor="crimson" Color="white" @onclick="() => DeleteNoteAsync(note.Id)"
@@ -38,10 +42,18 @@
 @if (_shownEditableNote is not null)
 {
     <FluentDialog>
-        <EditableNote Note="_shownEditableNote" OnClose="CloseEditableNote"></EditableNote>
+        <EditableNote Note="_shownEditableNote" OnClose="HandleCloseEditableNote"></EditableNote>
     </FluentDialog>
 }
 
+@if (_showAddNote)
+{
+    <FluentDialog>
+        <AddNote OnClose="HandleCloseAddNote"></AddNote>
+    </FluentDialog>
+}
+
+@*TODO change to better feedback*@
 @if (_loadingNotes)
 {
     <div>Loading...</div>

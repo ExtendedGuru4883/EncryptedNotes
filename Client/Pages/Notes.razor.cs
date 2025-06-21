@@ -17,6 +17,7 @@ public partial class Notes : ComponentBase
     private Guid _askConfirmDeletionNoteId = Guid.Empty;
     private Guid _awaitingDeletionNoteId = Guid.Empty;
     private NoteModel? _shownEditableNote;
+    private bool _showAddNote;
 
     protected override async Task OnInitializedAsync()
     {
@@ -102,7 +103,23 @@ public partial class Notes : ComponentBase
         var removed = _notes.FirstOrDefault(n => n.Id == noteId);
         if (removed != null) _notes.Remove(removed);
     }
-    
-    private void OpenEditableNote(NoteModel note) => _shownEditableNote = note;
-    private void CloseEditableNote() => _shownEditableNote = null;
+
+    private void HandleOpenAddNote() => _showAddNote = true;
+
+    private void HandleCloseAddNote(NoteModel? addedNote)
+    {
+        if (addedNote is not null) _notes.Add(addedNote);
+        _showAddNote = false;
+    }
+    private void HandleOpenEditableNote(NoteModel note) => _shownEditableNote = note;
+
+    private void HandleCloseEditableNote(NoteModel? editedNote)
+    {
+        if (editedNote is not null)
+        {
+            var index = _notes.FindIndex(n => n.Id == editedNote.Id);
+            if (index != -1) _notes[index] = editedNote;
+        }
+        _shownEditableNote = null;
+    }
 }

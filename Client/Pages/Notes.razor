@@ -17,7 +17,7 @@
 }
 
 <Virtualize Items="FilteredNotes" Context="note">
-    <FluentCard @key="note.Id" Style="padding: 2rem; min-width: 320px;" class="mb-3">
+    <FluentCard @key="note.Id" Style="padding: 1rem 2rem 1rem 2rem; min-width: 320px;" class="mb-3">
         <FluentStack Orientation="Orientation.Vertical">
             <div>@note.Title</div>
             <FluentDivider Style="width: 100%;"></FluentDivider>
@@ -54,8 +54,22 @@
     </FluentDialog>
 }
 
-@*TODO change to better feedback*@
 @if (_loadingNotes)
 {
-    <div>Loading...</div>
+    <FluentCard Style="padding: 1rem 2rem 1rem 2rem; min-width: 320px;" class="mb-3">
+        <FluentStack Orientation="Orientation.Vertical">
+            <FluentSkeleton Height="20px" Style="width: 60%;" Shimmer="true" class="mb-2"/>
+            <FluentDivider Style="width: 100%;"/>
+            <FluentSkeleton Height="60px" Style="width: 100%;" Shimmer="true" class="mb-2"/>
+            <FluentDivider Style="width: 100%;"/>
+            <FluentStack Orientation="Orientation.Horizontal"
+                         HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                <FluentStack Orientation="Orientation.Horizontal" Style="gap: 0.5rem;">
+                    <FluentSkeleton Height="32px" Width="64px" Shimmer="true"/>
+                    <FluentSkeleton Height="32px" Width="64px" Shimmer="true"/>
+                </FluentStack>
+                <FluentSkeleton Height="16px" Width="80px" Shimmer="true"/>
+            </FluentStack>
+        </FluentStack>
+    </FluentCard>
 }

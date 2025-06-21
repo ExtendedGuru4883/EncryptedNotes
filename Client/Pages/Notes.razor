@@ -73,3 +73,13 @@
         </FluentStack>
     </FluentCard>
 }
+else @if (_notes.Count == 0)
+{
+    <FluentCard Style="padding: 1rem 2rem 1rem 2rem; min-width: 320px;" class="mb-3">
+        <FluentStack Orientation="Orientation.Vertical">
+            <div>You don't have any notes yes</div>
+            <FluentDivider Style="width: 100%;"></FluentDivider>
+            <div>Start by adding a new note, only encrypted data will be sent to the server!</div>
+        </FluentStack>
+    </FluentCard>
+}

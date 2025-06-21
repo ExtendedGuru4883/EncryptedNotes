@@ -13,6 +13,11 @@ public partial class Signup : ComponentBase
     private readonly List<string> _errors = [];
     private bool _isLoading;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.LogoutAsync();
+    }
+
     private async Task SubmitAsync()
     {
         _errors.Clear();

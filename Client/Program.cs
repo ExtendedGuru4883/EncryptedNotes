@@ -19,6 +19,7 @@ builder.Services.AddScoped<IApiClient, ApiClient>();
 builder.Services.AddScoped<IEncryptionKeyStorageService, EncryptionKeyStorageService>();
 builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthStateService, AuthStateService>();
 #pragma warning disable CA1416
 builder.Services.AddScoped<ISignatureService, SignatureService>();
 builder.Services.AddScoped<ICryptoService, CryptoService>();

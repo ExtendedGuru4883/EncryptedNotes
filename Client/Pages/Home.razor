@@ -1,7 +1,11 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+@code {
+    [Inject] public required NavigationManager NavigationManager { get; set; }
 
-<h1>Hello, world!</h1>
+    protected override void OnInitialized()
+    {
+        NavigationManager.NavigateTo("notes");
+    }
 
-Welcome to your new app.
+}

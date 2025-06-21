@@ -1,20 +1,26 @@
 @page "/AddNote"
-<h3>AddNote</h3>
 
-<EditForm OnValidSubmit="SubmitAsync" Model="_model">
-    <DataAnnotationsValidator/>
-    <ul>
+<FluentCard Style="padding: 2rem; min-width: 320px;">
+    <h3>Add a new note</h3>
+    <EditForm OnValidSubmit="SubmitAsync" Model="_model">
+        <DataAnnotationsValidator/>
+
         @foreach (var error in _errors)
         {
-            <li class="text-danger">@error</li>
+            <div class="text-danger">@error</div>
         }
-    </ul>
 
-    <InputText @bind-Value="_model.Title" placeholder="Title"/>
-    <ValidationMessage For="@(() => _model.Title)"/>
-
-    <InputText @bind-Value="_model.Content" placeholder="Content"/>
-    <ValidationMessage For="@(() => _model.Content)"/>
-
-    <button type="submit" disabled="@_isLoading">@(_isLoading ? "Loading..." : "Add note")</button>
-</EditForm>
+        <FluentStack Orientation="Orientation.Vertical">
+            <div>
+                <FluentTextField @bind-Value="_model.Title" placeholder="Title"/>
+                <ValidationMessage For="@(() => _model.Title)"/>
+            </div>
+            <div>
+                <FluentTextField @bind-Value="_model.Content" placeholder="Content"/>
+                <ValidationMessage For="@(() => _model.Content)"/>
+            </div>
+            <FluentButton Appearance="@Appearance.Accent" Type="ButtonType.Submit"
+                          disabled="@_isLoading">@(_isLoading ? "Loading..." : "Add note")</FluentButton>
+        </FluentStack>
+    </EditForm>
+</FluentCard>

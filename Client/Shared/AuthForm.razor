@@ -17,7 +17,9 @@
                 <FluentTextField @bind-Value="Model.Password" placeholder="Password" Required/>
                 <FluentValidationMessage For="@(() => Model.Password)"/>
             </div>
-            <FluentButton Appearance="@Appearance.Accent" Type="ButtonType.Submit" disabled="@IsLoading">@(IsLoading ? "Loading..." : Name)</FluentButton>
+            <FluentButton Appearance="Appearance.Accent" Type="ButtonType.Submit" Loading="@IsLoading">
+                @Name
+            </FluentButton>
         </FluentStack>
     </EditForm>
 </FluentCard>

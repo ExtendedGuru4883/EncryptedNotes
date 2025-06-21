@@ -1,0 +1,23 @@
+<FluentCard Style="padding: 2rem; min-width: 320px;">
+    <h3>@Name</h3>
+    <EditForm OnValidSubmit="HandleSubmit" Model="Model">
+        <DataAnnotationsValidator/>
+
+        @foreach (var error in Errors)
+        {
+            <div class="text-danger">@error</div>
+        }
+
+        <FluentStack Orientation="Orientation.Vertical">
+            <div>
+                <FluentTextField @bind-Value="Model.Username" placeholder="Username" Required/>
+                <FluentValidationMessage For="@(() => Model.Username)"/>
+            </div>
+            <div>
+                <FluentTextField @bind-Value="Model.Password" placeholder="Password" Required/>
+                <FluentValidationMessage For="@(() => Model.Password)"/>
+            </div>
+            <FluentButton Appearance="@Appearance.Accent" Type="ButtonType.Submit" disabled="@IsLoading">@(IsLoading ? "Loading..." : Name)</FluentButton>
+        </FluentStack>
+    </EditForm>
+</FluentCard>

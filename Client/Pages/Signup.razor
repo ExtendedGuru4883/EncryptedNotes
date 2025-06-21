@@ -1,21 +1,4 @@
 @page "/signup"
+@using Client.Shared
 
-<h3>Signup</h3>
-
-<EditForm OnValidSubmit="Submit" Model="_model">
-    <DataAnnotationsValidator/>
-    <ul>
-        @foreach (var error in _errors)
-        {
-            <li class="text-danger">@error</li>
-        }
-    </ul>
-
-    <InputText @bind-Value="_model.Username" placeholder="Username"/>
-    <ValidationMessage For="@(() => _model.Username)"/>
-
-    <InputText @bind-Value="_model.Password" placeholder="Password"/>
-    <ValidationMessage For="@(() => _model.Password)"/>
-
-    <button type="submit" disabled="@_isLoading">@(_isLoading ? "Loading..." : "Signup")</button>
-</EditForm>
+<AuthForm OnSubmit="SubmitAsync" Errors="_errors" IsLoading="_isLoading" Model="_model" Name="Signup"></AuthForm>

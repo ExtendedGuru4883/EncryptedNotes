@@ -13,7 +13,7 @@ public partial class Signup : ComponentBase
     private readonly List<string> _errors = [];
     private bool _isLoading;
 
-    private async Task Submit()
+    private async Task SubmitAsync()
     {
         _errors.Clear();
         _isLoading = true;

@@ -7,6 +7,7 @@ using Client.Services;
 using Client.Services.Clients;
 using Client.Services.Clients.Interfaces;
 using Client.Services.Interfaces;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -25,5 +26,8 @@ builder.Services.AddScoped<ICryptoService, CryptoService>();
 
 builder.Services.AddBlazorSodium();
 builder.Services.AddBlazoredSessionStorage();
+
+builder.Services.AddFluentUIComponents();
+
 
 await builder.Build().RunAsync();

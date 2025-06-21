@@ -1,4 +1,6 @@
 @page "/login"
 @using Client.Shared
 
-<AuthForm OnSubmit="SubmitAsync" Errors="_errors" IsLoading="_isLoading" Model="_model" Name="Login"></AuthForm>
+<div class="auth-wrapper">
+    <AuthForm OnSubmit="SubmitAsync" Errors="_errors" IsLoading="_isLoading" Model="_model" Name="Login"></AuthForm>
+</div>

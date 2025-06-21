@@ -2,84 +2,87 @@
 @using System.Globalization
 @using Client.Shared
 
-<h3>Your notes</h3>
-
-<FluentToolbar style="width:100%" class="mb-3">
-    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
-        <FluentTextField @bind-Value="_searchTerm" Placeholder="Search in titles"></FluentTextField>
-        <FluentButton Appearance="Appearance.Accent" @onclick="HandleOpenAddNote">Add new note</FluentButton>
-    </FluentStack>
-</FluentToolbar>
-
-@foreach (var error in _errors)
-{
-    <div class="text-danger">@error</div>
-}
-
-<Virtualize Items="FilteredNotes" Context="note">
-    <FluentCard @key="note.Id" Style="padding: 1rem 2rem 1rem 2rem; min-width: 320px;" class="mb-3">
-        <FluentStack Orientation="Orientation.Vertical">
-            <div>@note.Title</div>
-            <FluentDivider Style="width: 100%;"></FluentDivider>
-            <div>@note.Content</div>
-            <FluentDivider Style="width: 100%;"></FluentDivider>
-            <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
-                <div>
-                    <FluentButton Appearance="Appearance.Accent" @onclick="() => HandleOpenEditableNote(note)">
-                        Edit
-                    </FluentButton>
-                    <FluentButton BackgroundColor="crimson" Color="white" @onclick="() => DeleteNoteAsync(note.Id)"
-                                  disabled="@(_awaitingDeletionNoteId != Guid.Empty)"
-                                  Loading="@(_awaitingDeletionNoteId == note.Id)">
-                        @(_askConfirmDeletionNoteId == note.Id ? "Confirm?" : "Delete")
-                    </FluentButton>
-                </div>
-                <div>@note.TimeStamp.ToString("d", CultureInfo.CurrentCulture)</div>
-            </FluentStack>
+<div class="notes-container">
+    <h3>Your notes</h3>
+    
+    <FluentToolbar style="width:100%" class="mb-3">
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+            <FluentTextField @bind-Value="_searchTerm" Placeholder="Search in titles"></FluentTextField>
+            <FluentButton Appearance="Appearance.Accent" @onclick="HandleOpenAddNote">Add new note</FluentButton>
         </FluentStack>
-    </FluentCard>
-</Virtualize>
+    </FluentToolbar>
 
-@if (_shownEditableNote is not null)
-{
-    <FluentDialog>
-        <EditableNote Note="_shownEditableNote" OnClose="HandleCloseEditableNote"></EditableNote>
-    </FluentDialog>
-}
+    @foreach (var error in _errors)
+    {
+        <div class="text-danger">@error</div>
+    }
 
-@if (_showAddNote)
-{
-    <FluentDialog>
-        <AddNote OnClose="HandleCloseAddNote"></AddNote>
-    </FluentDialog>
-}
-
-@if (_loadingNotes)
-{
-    <FluentCard Style="padding: 1rem 2rem 1rem 2rem; min-width: 320px;" class="mb-3">
-        <FluentStack Orientation="Orientation.Vertical">
-            <FluentSkeleton Height="20px" Style="width: 60%;" Shimmer="true" class="mb-2"/>
-            <FluentDivider Style="width: 100%;"/>
-            <FluentSkeleton Height="60px" Style="width: 100%;" Shimmer="true" class="mb-2"/>
-            <FluentDivider Style="width: 100%;"/>
-            <FluentStack Orientation="Orientation.Horizontal"
-                         HorizontalAlignment="HorizontalAlignment.SpaceBetween">
-                <FluentStack Orientation="Orientation.Horizontal" Style="gap: 0.5rem;">
-                    <FluentSkeleton Height="32px" Width="64px" Shimmer="true"/>
-                    <FluentSkeleton Height="32px" Width="64px" Shimmer="true"/>
+    <Virtualize Items="FilteredNotes" Context="note">
+        <FluentCard @key="note.Id" Style="padding: 1rem 2rem 1rem 2rem; min-width: 320px;" class="mb-3">
+            <FluentStack Orientation="Orientation.Vertical">
+                <div class="note-text">@note.Title</div>
+                <FluentDivider Style="width: 100%;"></FluentDivider>
+                <div class="note-text">@note.Content</div>
+                <FluentDivider Style="width: 100%;"></FluentDivider>
+                <FluentStack Orientation="Orientation.Horizontal"
+                             HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                    <div>
+                        <FluentButton Appearance="Appearance.Accent" @onclick="() => HandleOpenEditableNote(note)">
+                            Edit
+                        </FluentButton>
+                        <FluentButton BackgroundColor="crimson" Color="white" @onclick="() => DeleteNoteAsync(note.Id)"
+                                      disabled="@(_awaitingDeletionNoteId != Guid.Empty)"
+                                      Loading="@(_awaitingDeletionNoteId == note.Id)">
+                            @(_askConfirmDeletionNoteId == note.Id ? "Confirm?" : "Delete")
+                        </FluentButton>
+                    </div>
+                    <div>@note.TimeStamp.ToString("d", CultureInfo.CurrentCulture)</div>
                 </FluentStack>
-                <FluentSkeleton Height="16px" Width="80px" Shimmer="true"/>
             </FluentStack>
-        </FluentStack>
-    </FluentCard>
-}
-else @if (_notes.Count == 0)
-{
-    <FluentCard Style="padding: 1rem 2rem 1rem 2rem; min-width: 320px;" class="mb-3">
-        <FluentStack Orientation="Orientation.Vertical">
-            <div>You don't have any notes yes</div>
-            <FluentDivider Style="width: 100%;"></FluentDivider>
-            <div>Start by adding a new note, only encrypted data will be sent to the server!</div>
-        </FluentStack>
-    </FluentCard>
-}
+        </FluentCard>
+    </Virtualize>
+
+    @if (_shownEditableNote is not null)
+    {
+        <FluentDialog>
+            <EditableNote Note="_shownEditableNote" OnClose="HandleCloseEditableNote"></EditableNote>
+        </FluentDialog>
+    }
+
+    @if (_showAddNote)
+    {
+        <FluentDialog>
+            <AddNote OnClose="HandleCloseAddNote"></AddNote>
+        </FluentDialog>
+    }
+
+    @if (_loadingNotes)
+    {
+        <FluentCard Style="padding: 1rem 2rem 1rem 2rem; min-width: 320px;" class="mb-3">
+            <FluentStack Orientation="Orientation.Vertical">
+                <FluentSkeleton Height="20px" Style="width: 60%;" Shimmer="true" class="mb-2"/>
+                <FluentDivider Style="width: 100%;"/>
+                <FluentSkeleton Height="60px" Style="width: 100%;" Shimmer="true" class="mb-2"/>
+                <FluentDivider Style="width: 100%;"/>
+                <FluentStack Orientation="Orientation.Horizontal"
+                             HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                    <FluentStack Orientation="Orientation.Horizontal" Style="gap: 0.5rem;">
+                        <FluentSkeleton Height="32px" Width="64px" Shimmer="true"/>
+                        <FluentSkeleton Height="32px" Width="64px" Shimmer="true"/>
+                    </FluentStack>
+                    <FluentSkeleton Height="16px" Width="80px" Shimmer="true"/>
+                </FluentStack>
+            </FluentStack>
+        </FluentCard>
+    }
+    else @if (_notes.Count == 0)
+    {
+        <FluentCard Style="padding: 1rem 2rem 1rem 2rem; min-width: 320px;" class="mb-3">
+            <FluentStack Orientation="Orientation.Vertical">
+                <div>You don't have any notes yes</div>
+                <FluentDivider Style="width: 100%;"></FluentDivider>
+                <div>Start by adding a new note, only encrypted data will be sent to the server!</div>
+            </FluentStack>
+        </FluentCard>
+    }
+</div>

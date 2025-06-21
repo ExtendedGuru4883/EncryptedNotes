@@ -2,17 +2,21 @@
 @using System.Globalization
 @using Client.Shared
 
-<FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween" class="mb-3">
 <h3>Your notes</h3>
-<FluentButton Appearance="Appearance.Accent" @onclick="HandleOpenAddNote">Add new note</FluentButton>
-</FluentStack>
+
+<FluentToolbar style="width:100%" class="mb-3">
+    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+        <FluentTextField @bind-Value="_searchTerm" Placeholder="Search in titles"></FluentTextField>
+        <FluentButton Appearance="Appearance.Accent" @onclick="HandleOpenAddNote">Add new note</FluentButton>
+    </FluentStack>
+</FluentToolbar>
 
 @foreach (var error in _errors)
 {
     <div class="text-danger">@error</div>
 }
 
-<Virtualize Items="_notes" Context="note">
+<Virtualize Items="FilteredNotes" Context="note">
     <FluentCard @key="note.Id" Style="padding: 2rem; min-width: 320px;" class="mb-3">
         <FluentStack Orientation="Orientation.Vertical">
             <div>@note.Title</div>
@@ -25,12 +29,9 @@
                         Edit
                     </FluentButton>
                     <FluentButton BackgroundColor="crimson" Color="white" @onclick="() => DeleteNoteAsync(note.Id)"
-                                  disabled="@(_awaitingDeletionNoteId != Guid.Empty)">
-                        @(_askConfirmDeletionNoteId == note.Id
-                            ? _awaitingDeletionNoteId == note.Id
-                                ? "Deleting..."
-                                : "Confirm?"
-                            : "Delete")
+                                  disabled="@(_awaitingDeletionNoteId != Guid.Empty)"
+                                  Loading="@(_awaitingDeletionNoteId == note.Id)">
+                        @(_askConfirmDeletionNoteId == note.Id ? "Confirm?" : "Delete")
                     </FluentButton>
                 </div>
                 <div>@note.TimeStamp.ToString("d", CultureInfo.CurrentCulture)</div>

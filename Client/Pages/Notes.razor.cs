@@ -10,7 +10,7 @@ public partial class Notes : ComponentBase
     [Inject] public required NavigationManager NavigationManager { get; set; }
     [Inject] public required INoteService NoteService { get; set; }
 
-    private List<NoteModel> _notes = [];
+    private readonly List<NoteModel> _notes = [];
 
     private readonly List<string> _errors = [];
     private bool _loadingNotes = true;
@@ -18,6 +18,11 @@ public partial class Notes : ComponentBase
     private Guid _awaitingDeletionNoteId = Guid.Empty;
     private NoteModel? _shownEditableNote;
     private bool _showAddNote;
+    private string? _searchTerm = null;
+
+    private List<NoteModel> FilteredNotes => string.IsNullOrWhiteSpace(_searchTerm)
+        ? _notes
+        : _notes.Where(n => n.Title.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -133,7 +138,7 @@ public partial class Notes : ComponentBase
         if (fromIndex == toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= _notes.Count ||
             toIndex > _notes.Count) return;
         if (fromIndex < toIndex) toIndex--;
-        
+
         var note = _notes[fromIndex];
         _notes.RemoveAt(fromIndex);
         _notes.Insert(toIndex, note);

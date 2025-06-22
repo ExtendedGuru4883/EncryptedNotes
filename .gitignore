@@ -1,8 +1,12 @@
-**/.idea
+**/.idea/
+**/bin/
+**/obj/
+**/SQLite/
 **/.vs
-**/SQLite
 **/appsettings.*
 **/.env
-**/bin
-**/obj
 **/*.DotSettings.*
+**/*.db
+**/*.user
+**/*.suo
+**/.vscode

@@ -13,7 +13,10 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5207/api/") });
+var apiBaseAddress = builder.Configuration.GetValue<string>("ApiBaseAddress");
+ArgumentNullException.ThrowIfNull(apiBaseAddress);
+
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseAddress) });
 builder.Services.AddScoped<IApiClient, ApiClient>();
 
 builder.Services.AddScoped<IEncryptionKeyStorageService, EncryptionKeyStorageService>();

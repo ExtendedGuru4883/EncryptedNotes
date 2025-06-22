@@ -50,6 +50,7 @@ builder.Services.AddScoped<INoteRepository, NoteRepository>();
 
 //JWT configuration
 var jwtSettingsConfigurationSection = builder.Configuration.GetSection("JwtSettings");
+ArgumentNullException.ThrowIfNull(jwtSettingsConfigurationSection);
 builder.Services
     .AddOptions<JwtSettings>()
     .Bind(jwtSettingsConfigurationSection)
@@ -75,14 +76,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 //CORS configuration
+var frontendAddresses = builder.Configuration.GetSection("FrontendAddresses").Get<string[]>();
+ArgumentNullException.ThrowIfNull(frontendAddresses);
+
 const string frontendCorsName = "AllowFrontend";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: frontendCorsName,
         policy =>
         {
-            policy.WithOrigins("http://localhost:5291",
-                "https://localhost:7008")
+            policy.WithOrigins(frontendAddresses)
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });

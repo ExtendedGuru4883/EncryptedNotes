@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Shared.Dto.Requests.Auth;
 using Shared.Dto.Responses;
 using Shared.Enums;
+using Shared.Helpers;
 using Shared.Results;
 
 namespace BusinessLogic.Services;
@@ -25,11 +26,11 @@ public class AuthService(
         {
             logger.LogInformation(
                 "Retrieving signature salt for user {username} failed with not found: user doesn't exist (or potential data inconsistency)",
-                username);
+                SanitizeForLogging.Sanitize(username));
             return ServiceResult<ChallengeResponse>.Failure("User not found", ServiceResultErrorType.NotFound);
         }
 
-        logger.LogInformation("Retrieved signature salt for user {username}", username);
+        logger.LogInformation("Retrieved signature salt for user {username}", SanitizeForLogging.Sanitize(username));
 
         //Note: the login request can carry a nonce at most AuthConstants.Base64NonceMaxLength long
         //So never generate a nonce longer than the constant (or change the constant value)
@@ -42,7 +43,7 @@ public class AuthService(
 
         cache.Set($"nonceBase64:{username}", nonce, TimeSpan.FromMinutes(2));
 
-        logger.LogInformation("Generated challenge for user {username}", username);
+        logger.LogInformation("Generated challenge for user {username}", SanitizeForLogging.Sanitize(username));
         return ServiceResult<ChallengeResponse>.SuccessOk(challengeResponse);
     }
 
@@ -52,7 +53,7 @@ public class AuthService(
         {
             logger.LogInformation(
                 "Login for user {username} failed with bad request: invalid signature size",
-                loginRequest.Username);
+                SanitizeForLogging.Sanitize(loginRequest.Username));
             return ServiceResult<LoginResponse>.Failure(
                 $"Challenge failed: invalid signature size. Base64 signature size must be {signatureService.SignatureBase64Length} characters",
                 ServiceResultErrorType.BadRequest);
@@ -64,12 +65,12 @@ public class AuthService(
             string.IsNullOrEmpty(cachedNonceBase64) || cachedNonceBase64 != loginRequest.NonceBase64)
         {
             logger.LogInformation("Login for user {username} failed with unauthorized",
-                loginRequest.Username);
+                SanitizeForLogging.Sanitize(loginRequest.Username));
             return ServiceResult<LoginResponse>.Failure("Challenge expired or invalid",
                 ServiceResultErrorType.Unauthorized);
         }
 
-        logger.LogInformation("Nonce for user {username} is valid and matched request nonce", loginRequest.Username);
+        logger.LogInformation("Nonce for user {username} is valid and matched request nonce", SanitizeForLogging.Sanitize(loginRequest.Username));
 
         var userEntity = await userRepository.GetByUsernameAsync(loginRequest.Username);
         if (userEntity == null)
@@ -79,12 +80,12 @@ public class AuthService(
             logger.LogInformation(
                 "Login for user {username} failed with not found: user not found in database, " +
                 "probably generated challenge, deleted account and sent login request with old token?)",
-                loginRequest.Username);
+                SanitizeForLogging.Sanitize(loginRequest.Username));
             return ServiceResult<LoginResponse>.Failure("User not found",
                 ServiceResultErrorType.NotFound);
         }
 
-        logger.LogInformation("Successfully retrieved user {username} from database", loginRequest.Username);
+        logger.LogInformation("Successfully retrieved user {username} from database", SanitizeForLogging.Sanitize(loginRequest.Username));
 
         var nonceBytes = Convert.FromBase64String(cachedNonceBase64);
         var publicKeyBytes = Convert.FromBase64String(userEntity.PublicKeyBase64);
@@ -94,12 +95,12 @@ public class AuthService(
         {
             logger.LogInformation(
                 "Login for user {username} failed with unauthorized: challenge failed, invalid signature",
-                loginRequest.Username);
+                SanitizeForLogging.Sanitize(loginRequest.Username));
             return ServiceResult<LoginResponse>.Failure("Challenge failed: invalid signature",
                 ServiceResultErrorType.Unauthorized);
         }
 
-        logger.LogInformation("Challenge completed by user {username}", loginRequest.Username);
+        logger.LogInformation("Challenge completed by user {username}", SanitizeForLogging.Sanitize(loginRequest.Username));
 
         var loginResponse = new LoginResponse()
         {
@@ -107,7 +108,7 @@ public class AuthService(
             EncryptionSaltBase64 = userEntity.EncryptionSaltBase64,
         };
         logger.LogInformation("Login for user {username} succeeded. JWT generated",
-            loginRequest.Username);
+            SanitizeForLogging.Sanitize(loginRequest.Username));
         return ServiceResult<LoginResponse>.SuccessOk(loginResponse);
     }
 }

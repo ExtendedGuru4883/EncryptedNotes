@@ -1,3 +1,5 @@
+using Shared.Helpers;
+
 namespace EncryptedNotes.Middlewares;
 
 public class RequestResponseLoggingMiddleware
@@ -13,8 +15,8 @@ public class RequestResponseLoggingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        _logger.LogInformation("Handling request: {method} to {url}", context.Request.Method,
-            context.Request.Path);
+        _logger.LogInformation("Handling request: {method} to {url}", SanitizeForLogging.Sanitize(context.Request.Method),
+            SanitizeForLogging.Sanitize(context.Request.Path));
 
         await _next(context);
 

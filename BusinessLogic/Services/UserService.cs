@@ -6,6 +6,7 @@ using Core.Entities;
 using Microsoft.Extensions.Logging;
 using Shared.Dto;
 using Shared.Enums;
+using Shared.Helpers;
 using Shared.Results;
 
 namespace BusinessLogic.Services;
@@ -22,7 +23,7 @@ public class UserService(
         if (userDto.PublicKeyBase64.Length != signatureService.PublicKeyBase64Length)
         {
             logger.LogInformation("Adding new user {username} failed with bad request: invalid public key size",
-                userDto.Username);
+                SanitizeForLogging.Sanitize(userDto.Username));
             return ServiceResult<UserDto>.Failure(
                 $"Invalid public key size. Base64 key size must be {signatureService.PublicKeyBase64Length} characters",
                 ServiceResultErrorType.BadRequest);
@@ -31,12 +32,12 @@ public class UserService(
         if (await userRepository.UsernameExistsAsync(userDto.Username))
         {
             logger.LogInformation("Adding new user {username} failed  with conflict: username already exists",
-                userDto.Username);
+                SanitizeForLogging.Sanitize(userDto.Username));
             return ServiceResult<UserDto>.Failure("Username already exists", ServiceResultErrorType.Conflict);
         }
 
         await userRepository.AddAsync(mapper.Map<UserEntity>(userDto));
-        logger.LogInformation("Adding new user {username} succeeded", userDto.Username);
+        logger.LogInformation("Adding new user {username} succeeded", SanitizeForLogging.Sanitize(userDto.Username));
         return ServiceResult<UserDto>.SuccessCreated(userDto);
     }
 

@@ -17,6 +17,12 @@ public partial class Notes : ComponentBase
     private Guid _askConfirmDeletionNoteId = Guid.Empty;
     private Guid _awaitingDeletionNoteId = Guid.Empty;
     private NoteModel? _shownEditableNote;
+    private bool _showAddNote;
+    private string? _searchTerm = null;
+
+    private List<NoteModel> FilteredNotes => string.IsNullOrWhiteSpace(_searchTerm)
+        ? _notes
+        : _notes.Where(n => n.Title.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -41,7 +47,7 @@ public partial class Notes : ComponentBase
 
         _awaitingDeletionNoteId = noteId;
         await Task.Yield();
-        
+
         try
         {
             var result = await NoteService.DeleteNoteAsync(noteId);
@@ -77,7 +83,6 @@ public partial class Notes : ComponentBase
                 if (result.IsSuccess)
                 {
                     _notes.AddRange(result.Data.notes);
-                    StateHasChanged();
 
                     hasMore = result.Data.hasMore;
                     page++;
@@ -102,7 +107,40 @@ public partial class Notes : ComponentBase
         var removed = _notes.FirstOrDefault(n => n.Id == noteId);
         if (removed != null) _notes.Remove(removed);
     }
-    
-    private void OpenEditableNote(NoteModel note) => _shownEditableNote = note;
-    private void CloseEditableNote() => _shownEditableNote = null;
+
+    private void HandleOpenAddNote() => _showAddNote = true;
+
+    private void HandleCloseAddNote(NoteModel? addedNote)
+    {
+        if (addedNote is not null) _notes.Insert(0, addedNote);
+        _showAddNote = false;
+    }
+
+    private void HandleOpenEditableNote(NoteModel note) => _shownEditableNote = note;
+
+    private void HandleCloseEditableNote(NoteModel? editedNote)
+    {
+        if (editedNote is not null)
+        {
+            var index = _notes.FindIndex(n => n.Id == editedNote.Id);
+            if (index != -1)
+            {
+                _notes[index] = editedNote;
+                MoveNote(index, 0);
+            }
+        }
+
+        _shownEditableNote = null;
+    }
+
+    private void MoveNote(int fromIndex, int toIndex)
+    {
+        if (fromIndex == toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= _notes.Count ||
+            toIndex > _notes.Count) return;
+        if (fromIndex < toIndex) toIndex--;
+
+        var note = _notes[fromIndex];
+        _notes.RemoveAt(fromIndex);
+        _notes.Insert(toIndex, note);
+    }
 }

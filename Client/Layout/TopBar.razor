@@ -1,0 +1,16 @@
+<FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+             VerticalAlignment="VerticalAlignment.Center">
+    <h3 style="margin-block: 0;">Encrypted Notes</h3>
+
+    @if (AuthStateService.IsLoggedIn)
+    {
+        <FluentButton Appearance="Appearance.Neutral" @onclick="Logout">Logout</FluentButton>
+    }
+    else
+    {
+        <div>
+            <FluentButton Appearance="Appearance.Neutral" @onclick="GoToLogin">Login</FluentButton>
+            <FluentButton Appearance="Appearance.Neutral" @onclick="GoToSignup">Signup</FluentButton>
+        </div>
+    }
+</FluentStack>

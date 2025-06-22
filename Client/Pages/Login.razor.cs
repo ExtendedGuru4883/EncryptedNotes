@@ -12,6 +12,11 @@ public partial class Login : ComponentBase
     private readonly AuthFormModel _model = new();
     private readonly List<string> _errors = [];
     private bool _isLoading;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.LogoutAsync();
+    }
 
     private async Task SubmitAsync()
     {
@@ -24,7 +29,7 @@ public partial class Login : ComponentBase
             var serviceResponse = await AuthService.LoginAsync(_model.Username, _model.Password);
             if (serviceResponse.IsSuccess)
             {
-                NavigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo("/notes");
                 return;
             }
 

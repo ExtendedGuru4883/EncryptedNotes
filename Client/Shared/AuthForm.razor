@@ -1,0 +1,23 @@
+<div class="auth-form-container">
+    <h3 class="form-title">@Name</h3>
+    <EditForm OnValidSubmit="HandleSubmit" Model="Model">
+        <DataAnnotationsValidator />
+
+        <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Center" class="form-stack">
+            @foreach (var error in Errors)
+            {
+                <div class="text-danger">@error</div>
+            }
+            
+            <FluentTextField @bind-Value="Model.Username" placeholder="Username" Required/>
+            <FluentValidationMessage For="@(() => Model.Username)"/>
+
+            <FluentTextField @bind-Value="Model.Password" placeholder="Password" Required/>
+            <FluentValidationMessage For="@(() => Model.Password)"/>
+
+            <FluentButton Appearance="Appearance.Accent" Type="ButtonType.Submit" Loading="@IsLoading">
+                @Name
+            </FluentButton>
+        </FluentStack>
+    </EditForm>
+</div>

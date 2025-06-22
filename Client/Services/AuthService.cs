@@ -13,6 +13,7 @@ public class AuthService(
     IApiClient apiClient,
     ICryptoService cryptoService,
     ISignatureService signatureService,
+    IAuthStateService authStateService,
     ISessionStorageService sessionStorageService) : IAuthService
 {
     public async Task<ServiceResult> SignupAsync(string username, string password)
@@ -45,7 +46,7 @@ public class AuthService(
 
         if (apiLoginResponse is not { IsSuccess: true, Data: not null })
             return ServiceResult.Failure(apiLoginResponse.ErrorMessage ?? "Unexpected error during login");
-        
+
         //apiLoginResponse is IsSuccess true, Data not null
         await sessionStorageService.SetItemAsStringAsync("token",
             apiLoginResponse.Data.Token);
@@ -56,8 +57,16 @@ public class AuthService(
         var encryptionKeyBase64 = Convert.ToBase64String(encryptionKeyBytes);
 
         await sessionStorageService.SetItemAsStringAsync("encryptionKeyBase64", encryptionKeyBase64);
-        
-        return  ServiceResult.Success();
+
+        authStateService.IsLoggedIn = true;
+        return ServiceResult.Success();
+    }
+
+    public async Task<ServiceResult> LogoutAsync()
+    {
+        await sessionStorageService.ClearAsync();
+        authStateService.IsLoggedIn = false;
+        return ServiceResult.Success();
     }
 
     private SignupRequest GenerateSignupRequest(string username, string password)
@@ -76,7 +85,8 @@ public class AuthService(
         };
     }
 
-    private LoginRequest GenerateLoginRequest(ChallengeResponse challengeResponse, byte[] passwordBytes, string username)
+    private LoginRequest GenerateLoginRequest(ChallengeResponse challengeResponse, byte[] passwordBytes,
+        string username)
     {
         var nonceSignatureBytes = SignChallengeDetached(challengeResponse, passwordBytes);
 
@@ -87,7 +97,7 @@ public class AuthService(
             NonceSignatureBase64 = Convert.ToBase64String(nonceSignatureBytes),
         };
     }
-    
+
     private byte[] SignChallengeDetached(ChallengeResponse challengeResponse, byte[] passwordBytes)
     {
         var nonceBytes = Convert.FromBase64String(challengeResponse.NonceBase64);

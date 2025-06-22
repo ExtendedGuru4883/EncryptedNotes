@@ -12,7 +12,7 @@
             <FluentTextField @bind-Value="Model.Username" placeholder="Username" Required/>
             <FluentValidationMessage For="@(() => Model.Username)"/>
 
-            <FluentTextField @bind-Value="Model.Password" placeholder="Password" Required/>
+            <FluentTextField TextFieldType="TextFieldType.Password" @bind-Value="Model.Password" placeholder="Password" Required/>
             <FluentValidationMessage For="@(() => Model.Password)"/>
 
             <FluentButton Appearance="Appearance.Accent" Type="ButtonType.Submit" Loading="@IsLoading">

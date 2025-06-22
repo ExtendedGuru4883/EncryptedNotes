@@ -7,7 +7,7 @@
     
     <FluentToolbar style="width:100%" class="mb-3">
         <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
-            <FluentTextField @bind-Value="_searchTerm" Placeholder="Search in titles"></FluentTextField>
+            <FluentSearch @bind-Value="_searchTerm" Placeholder="Search in titles"></FluentSearch>
             <FluentButton Appearance="Appearance.Accent" @onclick="HandleOpenAddNote">Add new note</FluentButton>
         </FluentStack>
     </FluentToolbar>

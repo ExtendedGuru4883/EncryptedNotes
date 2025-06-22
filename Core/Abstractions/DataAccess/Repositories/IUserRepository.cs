@@ -8,4 +8,5 @@ public interface IUserRepository
     Task<UserEntity> AddAsync(UserEntity user);
     Task<bool> UsernameExistsAsync(string username);
     Task<string?> GetSignatureSaltByUsernameAsync(string username);
+    Task<bool> DeleteByIdAsync(Guid userId);
 }

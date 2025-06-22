@@ -7,27 +7,49 @@ namespace Test.TestHelpers;
 
 public static class CommonAssertions
 {
-    public static void AssertServiceResultSuccess<T>(ServiceResult<T> serviceResult, ServiceResultSuccessType expectedSuccessType)
+    public static void AssertServiceResultSuccess<T>(ServiceResult<T> serviceResult,
+        ServiceResultSuccessType expectedSuccessType)
     {
         serviceResult.IsSuccess.Should()
             .BeTrue();
         serviceResult.ErrorMessage.Should().BeEmpty("because there should be no error message when IsSuccess is true");
         serviceResult.Data.Should()
             .BeOfType<T>();
+        serviceResult.Data.Should().NotBeNull();
         serviceResult.SuccessType.Should().Be(expectedSuccessType);
     }
     
-    public static void AssertServiceResultFailure<T>(ServiceResult<T> serviceResult, ServiceResultErrorType expectedErrorType)
+    public static void AssertServiceResultSuccessNoContent(ServiceResult serviceResult)
+    {
+        serviceResult.IsSuccess.Should()
+            .BeTrue();
+        serviceResult.ErrorMessage.Should().BeEmpty("because there should be no error message when IsSuccess is true");
+        serviceResult.SuccessType.Should().Be(ServiceResultSuccessType.NoContent, "because only 'NoContent' success" +
+            " type should be allowed for non-generic successful service result");
+    }
+
+    public static void AssertServiceResultFailure<T>(ServiceResult<T> serviceResult,
+        ServiceResultErrorType expectedErrorType)
     {
         serviceResult.IsSuccess.Should()
             .BeFalse();
         serviceResult.ErrorMessage.Should()
             .NotBeNullOrEmpty("because an error message should be present when IsSuccess is false");
         serviceResult.Data.Should().BeNull("because there should be no data when IsSuccess is false");
+        
+    }
+    
+    public static void AssertServiceResultFailure(ServiceResult serviceResult,
+        ServiceResultErrorType expectedErrorType)
+    {
+        serviceResult.IsSuccess.Should()
+            .BeFalse();
+        serviceResult.ErrorMessage.Should()
+            .NotBeNullOrEmpty("because an error message should be present when IsSuccess is false");
         serviceResult.ErrorType.Should().Be(expectedErrorType);
     }
 
-    public static void AssertActionResultWithJsonResponse<T>(ActionResult<T> actionResult, T expectedContent,
+    public static void AssertActionResultWithJsonResponse<T>(ActionResult<T> actionResult, object expectedContent,
         int expectedStatusCode)
     {
         var jsonResult = actionResult.Result.Should().BeOfType<JsonResult>().Which;
@@ -35,4 +57,8 @@ public static class CommonAssertions
         jsonResult.ContentType.Should().Be("application/json");
         jsonResult.Value.Should().BeEquivalentTo(expectedContent);
     }
+
+    public static void AssertActionResultWithJsonResponse(ActionResult actionResult, object expectedContent,
+        int expectedStatusCode) =>
+        AssertActionResultWithJsonResponse<object>(actionResult, expectedContent, expectedStatusCode);
 }

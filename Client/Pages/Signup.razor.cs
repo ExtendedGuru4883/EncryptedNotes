@@ -1,60 +1,45 @@
-using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
-using System.Text;
-using Client.Helpers.Crypto.Interfaces;
-using Client.Models;
-using Client.Services.Clients.Interfaces;
-using Shared.Dto.Requests;
+using Client.Models.Forms;
+using Client.Services.Interfaces;
 
 namespace Client.Pages;
 
 public partial class Signup : ComponentBase
 {
-    [Inject] public required IApiClient ApiClient { get; set; }
-    [Inject] public required ICryptoHelper CryptoHelper { get; set; }
-    [Inject] public required ISignatureHelper SignatureHelper { get; set; }
+    [Inject] public required IAuthService AuthService { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
 
-    private readonly SignupFormModel _model = new();
+    private readonly AuthFormModel _model = new();
     private readonly List<string> _errors = [];
     private bool _isLoading;
 
-    private async Task Submit()
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.LogoutAsync();
+    }
+
+    private async Task SubmitAsync()
     {
         _errors.Clear();
         _isLoading = true;
+        await Task.Yield();
 
         try
         {
-            var signupRequest = GenerateSignupRequest();
-
-            var response = await ApiClient.HandleJsonPostAsync("auth/signup", JsonContent.Create(signupRequest));
-            if (response.IsSuccess)
+            var serviceResponse = await AuthService.SignupAsync(_model.Username, _model.Password);
+            if (serviceResponse.IsSuccess)
             {
                 NavigationManager.NavigateTo("login");
                 return;
             }
-            _errors.Add(response.ErrorMessage ?? "Unexpected error during signup");
+
+            _errors.Add(string.IsNullOrEmpty(serviceResponse.ErrorMessage)
+                ? "Unexpected error during signup"
+                : serviceResponse.ErrorMessage);
         }
         finally
         {
             _isLoading = false;
         }
-    }
-
-    private SignupRequest GenerateSignupRequest()
-    {
-        var passwordBytes = Encoding.UTF8.GetBytes(_model.Password);
-        var signatureSaltBytes = CryptoHelper.GenerateSalt();
-
-        var keyPairBytes = SignatureHelper.GenerateKeyPair(passwordBytes, signatureSaltBytes);
-
-        return new SignupRequest()
-        {
-            Username = _model.Username,
-            SignatureSaltBase64 = Convert.ToBase64String(signatureSaltBytes),
-            EncryptionSaltBase64 = Convert.ToBase64String(CryptoHelper.GenerateSalt()),
-            PublicKeyBase64 = Convert.ToBase64String(keyPairBytes.PublicKey)
-        };
     }
 }

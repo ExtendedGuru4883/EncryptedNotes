@@ -6,6 +6,8 @@ public class ValidBase64Attribute : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
+        if (value is null) return ValidationResult.Success;
+        
         if (value is not string stringValue ||
             !Convert.TryFromBase64String(stringValue, new byte[((stringValue.Length + 3) / 4) * 3], out _))
             return new ValidationResult($"{validationContext.DisplayName} must be a valid base64 string.");

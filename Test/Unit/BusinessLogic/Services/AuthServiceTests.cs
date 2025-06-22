@@ -1,6 +1,5 @@
-using System.Runtime.InteropServices;
-using BusinessLogic.Helpers.Crypto.Interfaces;
 using BusinessLogic.Services;
+using Core.Abstractions.BusinessLogic.Services;
 using Core.Abstractions.DataAccess.Repositories;
 using Core.Abstractions.Infrastructure;
 using Core.Entities;
@@ -17,8 +16,8 @@ public class AuthServiceTests
 {
     private readonly Mock<IUserRepository> _mockUserRepository = new();
     private readonly Mock<IJwtService> _mockJwtService = new();
-    private readonly Mock<ICryptoHelper> _mockCryptoHelper = new();
-    private readonly Mock<ISignatureHelper> _mockSignatureHelper = new();
+    private readonly Mock<ICryptoService> _mockCryptoHelper = new();
+    private readonly Mock<ISignatureService> _mockSignatureHelper = new();
     private readonly Mock<ILogger<AuthService>> _mockLogger = new();
     private readonly MemoryCache _realCache = new(new MemoryCacheOptions());
 
@@ -76,8 +75,8 @@ public class AuthServiceTests
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
 
-        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
-            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
+        _mockSignatureHelper.Setup(s => s.SignatureBase64Length)
+            .Returns(loginRequest.NonceSignatureBase64.Length);
 
         _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
             .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
@@ -94,7 +93,7 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task Login_UserNotFound_ReturnsFailureInternalServerError()
+    public async Task Login_UserNotFound_ReturnsFailureNotFound()
     {
         //Arrange
         var loginRequest = TestDataProvider.GetValidLoginRequest();
@@ -103,8 +102,8 @@ public class AuthServiceTests
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
 
-        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
-            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
+        _mockSignatureHelper.Setup(s => s.SignatureBase64Length)
+            .Returns(loginRequest.NonceSignatureBase64.Length);
 
         _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
             .ReturnsAsync(null as UserEntity); //Mocking unsuccessful user retrieval
@@ -113,7 +112,7 @@ public class AuthServiceTests
         var serviceResult = await _authService.Login(loginRequest);
 
         //Assert
-        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.InternalServerError);
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.NotFound);
     }
 
     [Fact]
@@ -126,8 +125,8 @@ public class AuthServiceTests
         //Setting nonce in cache for successful retrieval during service execution
         _realCache.Set($"nonceBase64:{loginRequest.Username}", loginRequest.NonceBase64, TimeSpan.FromMinutes(2));
 
-        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
-            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
+        _mockSignatureHelper.Setup(s => s.SignatureBase64Length)
+            .Returns(loginRequest.NonceSignatureBase64.Length);
 
         _mockUserRepository.Setup(r => r.GetByUsernameAsync(It.IsAny<string>()))
             .ReturnsAsync(TestDataProvider.GetUserEntity); //Mocking successful user retrieval
@@ -155,8 +154,8 @@ public class AuthServiceTests
         //Mock
         if (cacheHasValue) _realCache.Set($"nonceBase64:{loginRequest.Username}", cachedNonce, TimeSpan.FromMinutes(2));
 
-        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
-            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
+        _mockSignatureHelper.Setup(s => s.SignatureBase64Length)
+            .Returns(loginRequest.NonceSignatureBase64.Length);
 
         //Act
         var serviceResult = await _authService.Login(loginRequest);
@@ -173,8 +172,8 @@ public class AuthServiceTests
 
         //Mock
 
-        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
-            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length));
+        _mockSignatureHelper.Setup(s => s.SignatureBase64Length)
+            .Returns(loginRequest.NonceSignatureBase64.Length);
 
         //Setting nonce in cache for successful retrieval during service execution, with value not equal to request nonce
         _realCache.Set($"nonceBase64:{loginRequest.Username}", TestDataProvider.GetRandomValidBase64(),
@@ -194,8 +193,8 @@ public class AuthServiceTests
         var loginRequest = TestDataProvider.GetValidLoginRequest();
 
         //Mock
-        _mockSignatureHelper.Setup(s => s.SignatureBytesSize)
-            .Returns((Convert.FromBase64String(loginRequest.NonceSignatureBase64).Length + 1));
+        _mockSignatureHelper.Setup(s => s.SignatureBase64Length)
+            .Returns(loginRequest.NonceSignatureBase64.Length + 1);
 
         //Act
         var serviceResult = await _authService.Login(loginRequest);

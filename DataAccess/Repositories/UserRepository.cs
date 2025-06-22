@@ -34,4 +34,13 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
             .Select(u => u.SignatureSaltBase64)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<bool> DeleteByIdAsync(Guid userId)
+    {
+        var deleted = await dbContext.Users
+            .Where(u => u.Id == userId)
+            .ExecuteDeleteAsync();
+
+        return deleted > 0;
+    }
 }

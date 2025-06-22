@@ -40,4 +40,34 @@ public class NoteRepository(AppDbContext dbContext) : INoteRepository
         await dbContext.SaveChangesAsync();
         return entityEntry.Entity;
     }
+
+    public async Task<bool> DeleteByIdAsync(Guid noteId)
+    {
+        var deleted = await dbContext.Notes
+            .Where(n => n.Id == noteId)
+            .ExecuteDeleteAsync();
+
+        return deleted > 0;
+    }
+
+    public async Task<bool> DeleteByIdAndUserIdAsync(Guid noteId, Guid userId)
+    {
+        var deleted = await dbContext.Notes
+            .Where(n => n.Id == noteId && n.UserId == userId)
+            .ExecuteDeleteAsync();
+
+        return deleted > 0;
+    }
+
+    public async Task<bool> UpdateForUserIdAsync(NoteEntity note, Guid userId)
+    {
+        var updated = await dbContext.Notes
+            .Where(n => n.Id == note.Id && n.UserId == userId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(n => n.EncryptedTitleBase64, note.EncryptedTitleBase64)
+                .SetProperty(n => n.EncryptedContentBase64, note.EncryptedContentBase64)
+                .SetProperty(n => n.TimeStamp, note.TimeStamp));
+        
+        return updated > 0;
+    }
 }

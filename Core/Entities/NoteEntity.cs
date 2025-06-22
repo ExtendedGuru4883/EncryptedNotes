@@ -3,7 +3,7 @@ using Core.Entities.Base;
 
 namespace Core.Entities;
 
-public class NoteEntity : BaseEntity
+public record NoteEntity : BaseEntity
 {
     [Required]
     public required string EncryptedTitleBase64 { get; init; }

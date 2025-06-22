@@ -1,24 +1,25 @@
 using System.ComponentModel.DataAnnotations;
+using Shared.Constants;
 using Shared.Validations;
 
 namespace Shared.Dto;
 
-public class UserDto
+public record UserDto
 {
     [Required]
     [RegularExpression("^[a-zA-Z0-9]*$", ErrorMessage = "Username must be alphanumeric")]
-    [MaxLength(32, ErrorMessage = "Username cannot exceed 32 characters")]
+    [CustomStringLength(UserConstants.UsernameMaxLength)]
     public required string Username { get; set; }
     [Required]
     [ValidBase64]
-    [MaxLength(256, ErrorMessage = "Signature salt in base64 cannot exceed 256 characters")]
+    [CustomStringLength(AuthConstants.SignatureSaltBase64MaxLength, 1)]
     public required string SignatureSaltBase64 { get; set; }
     [Required]
     [ValidBase64]
-    [MaxLength(256, ErrorMessage = "Encryption salt in base64 cannot exceed 256 characters")]
+    [CustomStringLength(AuthConstants.EncryptionSaltBase64MaxLength, 1)]
     public required string EncryptionSaltBase64 { get; set; }
     [Required]
     [ValidBase64]
-    [MaxLength(256, ErrorMessage = "Public key in base64 cannot exceed 256 characters")]
+    [CustomStringLength(AuthConstants.PublicKeyBase64MaxLength, 1)]
     public required string PublicKeyBase64 { get; set; }
 }

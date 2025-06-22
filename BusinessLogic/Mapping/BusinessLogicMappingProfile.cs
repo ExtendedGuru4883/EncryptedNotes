@@ -1,7 +1,7 @@
 using AutoMapper;
 using Core.Entities;
 using Shared.Dto;
-using Shared.Dto.Requests;
+using Shared.Dto.Requests.Auth;
 
 namespace BusinessLogic.Mapping;
 

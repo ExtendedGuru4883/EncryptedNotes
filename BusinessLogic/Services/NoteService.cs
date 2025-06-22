@@ -5,7 +5,7 @@ using Core.Abstractions.Infrastructure;
 using Core.Entities;
 using Microsoft.Extensions.Logging;
 using Shared.Dto;
-using Shared.Dto.Requests;
+using Shared.Dto.Requests.Notes;
 using Shared.Dto.Responses;
 using Shared.Enums;
 using Shared.Results;
@@ -25,7 +25,7 @@ public class NoteService(
         {
             logger.LogInformation(
                 "Getting notes for current user failed with unauthorized: current user id missing or invalid");
-            return ServiceResult<List<NoteDto>>.Failure("There is no authenticated user",
+            return ServiceResult<List<NoteDto>>.Failure("You need to be logged in to get notes",
                 ServiceResultErrorType.Unauthorized);
         }
 
@@ -41,7 +41,7 @@ public class NoteService(
         {
             logger.LogInformation(
                 "Getting paginated notes for current user failed with unauthorized: current user id missing or invalid");
-            return ServiceResult<PaginatedResponse<NoteDto>>.Failure("There is no authenticated user",
+            return ServiceResult<PaginatedResponse<NoteDto>>.Failure("You need to be logged in to get notes",
                 ServiceResultErrorType.Unauthorized);
         }
 
@@ -75,6 +75,54 @@ public class NoteService(
         await noteRepository.AddAsync(noteEntity);
 
         logger.LogInformation("Adding note for current user {UserId} succeeded", currentUserGuid);
-        return ServiceResult<NoteDto>.Success(mapper.Map<NoteDto>(noteEntity), ServiceResultSuccessType.Created);
+        return ServiceResult<NoteDto>.SuccessCreated(mapper.Map<NoteDto>(noteEntity));
+    }
+    
+    public async Task<ServiceResult> DeleteByIdForCurrentUserAsync(Guid noteId)
+    {
+        if (!Guid.TryParse(currentUserService.UserId, out var currentUserGuid))
+        {
+            logger.LogInformation(
+                "Deleting note {NoteId} for current user failed with unauthorized: current user id missing or invalid", noteId);
+            return ServiceResult.Failure("You need to be logged in to delete a note",
+                ServiceResultErrorType.Unauthorized);
+        }
+
+        if (!(await noteRepository.DeleteByIdAndUserIdAsync(noteId, currentUserGuid)))
+        {
+            logger.LogInformation(
+                "Deleting note {NoteId} for current user {UserId} failed with not found: repository delete returned " +
+                "false, note doesn't exist or doesn't belong to current user", noteId, currentUserGuid);
+            return ServiceResult.Failure("Note not found",
+                ServiceResultErrorType.NotFound);
+        }
+        
+        logger.LogInformation(
+            "Deleting note {NoteId} for current user {UserId} succeeded", noteId, currentUserGuid);
+        return ServiceResult.SuccessNoContent();
+    }
+    
+    public async Task<ServiceResult<NoteDto>> UpdateForCurrentUserAsync(NoteDto noteDto)
+    {
+        if (!Guid.TryParse(currentUserService.UserId, out var currentUserGuid))
+        {
+            logger.LogInformation(
+                "Updating note {NoteId} for current user failed with unauthorized: current user id missing or invalid", noteDto.Id);
+            return ServiceResult<NoteDto>.Failure("You need to be logged in to delete a note",
+                ServiceResultErrorType.Unauthorized);
+        }
+
+        if (!(await noteRepository.UpdateForUserIdAsync(mapper.Map<NoteEntity>(noteDto), currentUserGuid)))
+        {
+            logger.LogInformation(
+                "Updating note {NoteId} for current user {UserId} failed with not found: repository delete returned " +
+                "false, note doesn't exist or doesn't belong to current user", noteDto.Id, currentUserGuid);
+            return ServiceResult<NoteDto>.Failure("Note not found",
+                ServiceResultErrorType.NotFound);
+        }
+        
+        logger.LogInformation(
+            "Updating note {NoteId} for current user {UserId} succeeded", noteDto.Id, currentUserGuid);
+        return ServiceResult<NoteDto>.SuccessOk(noteDto);
     }
 }

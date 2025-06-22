@@ -9,38 +9,38 @@ public static class ServiceResultMapper
 {
     public static ActionResult<T> ToActionResult<T>(ServiceResult<T> serviceResult)
     {
-        int statusCode;
-        object? content;
+        if (!serviceResult.IsSuccess) return MapFailure(serviceResult.ErrorType, serviceResult.ErrorMessage);
         
-        if (serviceResult.IsSuccess)
-        {
-            statusCode = serviceResult.SuccessType switch
-            {
-                ServiceResultSuccessType.Created => StatusCodes.Status201Created,
-                _ => StatusCodes.Status200OK
-            };
+        if (serviceResult.SuccessType is ServiceResultSuccessType.NoContent)
+            throw new InvalidOperationException(
+                "SuccessType 'NoContent' is invalid for generic ServiceResult<T>. Use non-generic ServiceResult instead.");
             
-            content = serviceResult.Data;
-        }
-        else
-        {
-            statusCode = serviceResult.ErrorType switch
-            {
-                ServiceResultErrorType.BadRequest => StatusCodes.Status400BadRequest,
-                ServiceResultErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-                ServiceResultErrorType.Forbidden => StatusCodes.Status403Forbidden,
-                ServiceResultErrorType.NotFound => StatusCodes.Status404NotFound,
-                ServiceResultErrorType.Conflict => StatusCodes.Status409Conflict,
-                _ => StatusCodes.Status500InternalServerError
-            };
-            
-            content = new ErrorResponseDto(serviceResult.ErrorMessage);
-        }
-
-        return new JsonResult(content)
+        return new JsonResult(serviceResult.Data)
         {
             ContentType = "application/json",
-            StatusCode = statusCode
+            StatusCode = serviceResult.SuccessType is null ? 200 : (int)serviceResult.SuccessType
+        };
+
+    }
+
+    public static ActionResult ToActionResult(ServiceResult serviceResult)
+    {
+        if (!serviceResult.IsSuccess) return MapFailure(serviceResult.ErrorType, serviceResult.ErrorMessage);
+        
+        if (serviceResult.SuccessType != ServiceResultSuccessType.NoContent)
+            throw new InvalidOperationException(
+                $"SuccessType '{serviceResult.SuccessType}' for non-generic ServiceResult. Expected 'NoContent'. Use generic ServiceResult instead.");
+
+        return new NoContentResult();
+
+    }
+
+    private static JsonResult MapFailure(ServiceResultErrorType? errorType, string errorMessage)
+    {
+        return new JsonResult(new ErrorResponseDto(errorMessage))
+        {
+            ContentType = "application/json",
+            StatusCode = errorType is null ? 500 : (int)errorType
         };
     }
 }

@@ -1,33 +1,33 @@
-using System.Text;
-using Blazored.SessionStorage;
-using Client.Helpers.Crypto.Interfaces;
+using Client.Exceptions;
 using Client.Models;
-using Client.Services.Clients.Interfaces;
+using Client.Services.Interfaces;
 using Microsoft.AspNetCore.Components;
-using Shared.Dto;
-using Shared.Dto.Requests;
-using Shared.Dto.Responses;
 
 namespace Client.Pages;
 
 public partial class Notes : ComponentBase
 {
-    [Inject] public required IApiClient ApiClient { get; set; }
-    [Inject] public required ICryptoHelper CryptoHelper { get; set; }
-    [Inject] public required ISessionStorageService SessionStorageService { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
+    [Inject] public required INoteService NoteService { get; set; }
 
     private readonly List<NoteModel> _notes = [];
-    private byte[]? _encryptionKeyBytes;
 
     private readonly List<string> _errors = [];
     private bool _loadingNotes = true;
+    private Guid _askConfirmDeletionNoteId = Guid.Empty;
+    private Guid _awaitingDeletionNoteId = Guid.Empty;
+    private NoteModel? _shownEditableNote;
+    private bool _showAddNote;
+    private string? _searchTerm = null;
+
+    private List<NoteModel> FilteredNotes => string.IsNullOrWhiteSpace(_searchTerm)
+        ? _notes
+        : _notes.Where(n => n.Title.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            if (!(await TryInitializeEncryptionKey())) return;
             await LoadNotesAsync();
         }
         finally
@@ -36,85 +36,111 @@ public partial class Notes : ComponentBase
         }
     }
 
-    private async Task<bool> TryInitializeEncryptionKey()
+    private async Task DeleteNoteAsync(Guid noteId)
     {
-        var encryptionKeyBase64 = await SessionStorageService.GetItemAsStringAsync("encryptionKeyBase64");
+        if (_askConfirmDeletionNoteId != noteId)
+        {
+            _askConfirmDeletionNoteId = noteId;
+            StateHasChanged();
+            return;
+        }
+
+        _awaitingDeletionNoteId = noteId;
+        await Task.Yield();
+
         try
         {
-            _encryptionKeyBytes = Convert.FromBase64String(encryptionKeyBase64);
-            return true;
+            var result = await NoteService.DeleteNoteAsync(noteId);
+            if (result.IsSuccess)
+            {
+                RemoveNoteFromLocalList(noteId);
+                return;
+            }
+
+            //!apiDeleteNoteResponse.IsSuccess;
+            _errors.Add((string.IsNullOrEmpty(result.ErrorMessage)
+                ? "Unexpected error deleting note"
+                : result.ErrorMessage));
         }
-        catch
+        finally
         {
-            NavigationManager.NavigateTo("/login");
-            return false;
+            _awaitingDeletionNoteId = Guid.Empty;
+            _askConfirmDeletionNoteId = Guid.Empty;
         }
     }
 
     private async Task LoadNotesAsync()
     {
-        if (_encryptionKeyBytes is null) return;
-
         var page = 1;
         const int pageSize = 20;
         var hasMore = true;
 
         while (hasMore)
         {
-            Thread.Sleep(1000);
-            var queryString = ToQueryString(new PaginatedNotesRequest
+            try
             {
-                Page = page,
-                PageSize = pageSize
-            });
+                var result = await NoteService.GetNotesPageAsync(page, pageSize);
+                if (result.IsSuccess)
+                {
+                    _notes.AddRange(result.Data.notes);
 
-            var apiGetNotesResponse =
-                await ApiClient.HandleJsonGetWithAuthAsync<PaginatedResponse<NoteDto>>(
-                    $"notes/get?{queryString}");
-            if (apiGetNotesResponse is not { IsSuccess: true, Data: not null })
-            {
-                //!apiGetNotesResponse.IsSuccess
-                _errors.Add(apiGetNotesResponse.ErrorMessage ?? "Unexpected error loading notes");
+                    hasMore = result.Data.hasMore;
+                    page++;
+                    continue;
+                }
+
+                _errors.Add((string.IsNullOrEmpty(result.ErrorMessage)
+                    ? "Unexpected error loading notes"
+                    : result.ErrorMessage));
                 break;
             }
-
-            var pageNotes = apiGetNotesResponse.Data.Items.Select(n => new NoteModel
+            catch (EncryptionKeyMissingException)
             {
-                Title = Encoding.UTF8.GetString(CryptoHelper.Decrypt(
-                    Convert.FromBase64String(n.EncryptedTitleBase64),
-                    _encryptionKeyBytes)),
-                Content = Encoding.UTF8.GetString(CryptoHelper.Decrypt(
-                    Convert.FromBase64String(n.EncryptedContentBase64),
-                    _encryptionKeyBytes)),
-                TimeStamp = n.TimeStamp
-            });
-
-            _notes.AddRange(pageNotes);
-            StateHasChanged();
-                
-            hasMore = apiGetNotesResponse.Data.HasMore;
-            page++;
+                NavigationManager.NavigateTo("/login");
+                break;
+            }
         }
     }
 
-    private static string ToQueryString(PaginatedNotesRequest paginatedNotesRequest)
+    private void RemoveNoteFromLocalList(Guid noteId)
     {
-        var queryString = new StringBuilder();
+        var removed = _notes.FirstOrDefault(n => n.Id == noteId);
+        if (removed != null) _notes.Remove(removed);
+    }
 
-        foreach (var property in typeof(PaginatedNotesRequest).GetProperties())
+    private void HandleOpenAddNote() => _showAddNote = true;
+
+    private void HandleCloseAddNote(NoteModel? addedNote)
+    {
+        if (addedNote is not null) _notes.Insert(0, addedNote);
+        _showAddNote = false;
+    }
+
+    private void HandleOpenEditableNote(NoteModel note) => _shownEditableNote = note;
+
+    private void HandleCloseEditableNote(NoteModel? editedNote)
+    {
+        if (editedNote is not null)
         {
-            var propertyValue = property.GetValue(paginatedNotesRequest);
-            if (propertyValue is null) continue;
-
-            var propertyValueString = propertyValue.ToString();
-            if (string.IsNullOrEmpty(propertyValueString)) continue;
-
-            queryString.Append($"{Uri.EscapeDataString(property.Name)}={Uri.EscapeDataString(propertyValueString)}&");
+            var index = _notes.FindIndex(n => n.Id == editedNote.Id);
+            if (index != -1)
+            {
+                _notes[index] = editedNote;
+                MoveNote(index, 0);
+            }
         }
 
-        if (queryString.Length > 0)
-            queryString.Remove(queryString.Length - 1, 1);
+        _shownEditableNote = null;
+    }
 
-        return queryString.ToString();
+    private void MoveNote(int fromIndex, int toIndex)
+    {
+        if (fromIndex == toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= _notes.Count ||
+            toIndex > _notes.Count) return;
+        if (fromIndex < toIndex) toIndex--;
+
+        var note = _notes[fromIndex];
+        _notes.RemoveAt(fromIndex);
+        _notes.Insert(toIndex, note);
     }
 }

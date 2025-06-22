@@ -3,7 +3,7 @@ using Core.Entities.Base;
 
 namespace Core.Entities;
 
-public class UserEntity : BaseEntity
+public record UserEntity : BaseEntity
 {
     [Required]
     public required string Username { get; set; }

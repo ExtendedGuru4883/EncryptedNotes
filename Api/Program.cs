@@ -1,6 +1,4 @@
 using System.Text;
-using BusinessLogic.Helpers.Crypto;
-using BusinessLogic.Helpers.Crypto.Interfaces;
 using BusinessLogic.Mapping;
 using BusinessLogic.Services;
 using Core.Abstractions.BusinessLogic.Services;
@@ -42,18 +40,17 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INoteService, NoteService>();
+builder.Services.AddSingleton<ICryptoService, CryptoService>();
+builder.Services.AddSingleton<ISignatureService, SignatureService>();
 
 //Service Infrastructure
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
 
-//Helper
-builder.Services.AddSingleton<ICryptoHelper, CryptoHelper>();
-builder.Services.AddSingleton<ISignatureHelper, SignatureHelper>();
-
-//Configurazione JWT
+//JWT configuration
 var jwtSettingsConfigurationSection = builder.Configuration.GetSection("JwtSettings");
+ArgumentNullException.ThrowIfNull(jwtSettingsConfigurationSection);
 builder.Services
     .AddOptions<JwtSettings>()
     .Bind(jwtSettingsConfigurationSection)
@@ -78,10 +75,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+//CORS configuration
+var frontendAddresses = builder.Configuration.GetSection("FrontendAddresses").Get<string[]>();
+ArgumentNullException.ThrowIfNull(frontendAddresses);
+
+const string frontendCorsName = "AllowFrontend";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: frontendCorsName,
+        policy =>
+        {
+            policy.WithOrigins(frontendAddresses)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 //Build
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseCors(frontendCorsName);
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 

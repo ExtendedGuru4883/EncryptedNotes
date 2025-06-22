@@ -9,10 +9,10 @@
                 <div class="text-danger">@error</div>
             }
             
-            <FluentTextField @bind-Value="Model.Username" placeholder="Username" Required/>
+            <FluentTextField @bind-Value="Model.Username" Immediate="true" placeholder="Username" Required/>
             <FluentValidationMessage For="@(() => Model.Username)"/>
 
-            <FluentTextField TextFieldType="TextFieldType.Password" @bind-Value="Model.Password" placeholder="Password" Required/>
+            <FluentTextField TextFieldType="TextFieldType.Password" Immediate="true" @bind-Value="Model.Password" placeholder="Password" Required/>
             <FluentValidationMessage For="@(() => Model.Password)"/>
 
             <FluentButton Appearance="Appearance.Accent" Type="ButtonType.Submit" Loading="@IsLoading">

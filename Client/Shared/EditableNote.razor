@@ -9,16 +9,24 @@
 
     <FluentStack Orientation="Orientation.Vertical">
         <div style="width: 100%; height: 100%;">
-            <FluentTextArea @bind-Value="_noteFormModel.Title" Appearance="FluentInputAppearance.Filled"
+            <FluentTextArea @bind-Value="_noteFormModel.Title" Immediate="true" Appearance="FluentInputAppearance.Filled"
                             style="width: 100%; height: 100%;" placeholder="Title"/>
             <ValidationMessage For="@(() => _noteFormModel.Title)"/>
+            @if (_noteFormModel.Title.Length > 1000)
+            {
+                <div class="text-danger">@($"{_noteFormModel.Title.Length}/100")</div>
+            }
         </div>
         <FluentDivider Style="width: 100%;"></FluentDivider>
         <div style="width: 100%; height: 100%;">
-            <FluentTextArea @bind-Value="_noteFormModel.Content" Appearance="FluentInputAppearance.Filled"
+            <FluentTextArea @bind-Value="_noteFormModel.Content" Immediate="true" Appearance="FluentInputAppearance.Filled"
                             style="width: 100%; height: 100%;"
                             placeholder="Content"/>
             <ValidationMessage For="@(() => _noteFormModel.Content)"/>
+            @if (_noteFormModel.Content.Length > 1000)
+            {
+                <div class="text-danger">@($"{_noteFormModel.Content.Length}/1000")</div>
+            }
         </div>
         <FluentDivider Style="width: 100%;"></FluentDivider>
         <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">

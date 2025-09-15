@@ -9,7 +9,8 @@ public interface INoteService
 {
     [Obsolete("Deprecated. Use GetPageForCurrentUser instead.")]
     Task<ServiceResult<List<NoteDto>>> GetAllForCurrentUser();
-    Task<ServiceResult<PaginatedResponse<NoteDto>>> GetPageForCurrentUser(PaginatedNotesRequest request);
+    Task<ServiceResult<PageNumberPaginationResponse<NoteDto>>> GetPageByPageNumberForCurrentUser(PageNumberPaginationRequest request);
+    Task<ServiceResult<CursorPaginationResponse<NoteDto>>> GetPageByCursorForCurrentUser(CursorPaginationNotesRequest request);
     Task<ServiceResult<NoteDto>> AddAsyncToCurrentUser(NoteDto noteDto);
     Task<ServiceResult> DeleteByIdForCurrentUserAsync(Guid noteId);
     Task<ServiceResult<NoteDto>> UpdateForCurrentUserAsync(NoteDto noteDto);

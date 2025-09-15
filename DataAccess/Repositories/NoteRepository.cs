@@ -14,7 +14,7 @@ public class NoteRepository(AppDbContext dbContext) : INoteRepository
             .ToListAsync();
     }
 
-    public async Task<(List<NoteEntity> notes, int totalCount)> GetPageByUserIdAsync(Guid userId, int page, int pageSize)
+    public async Task<(List<NoteEntity> notes, int totalCount)> GetPageByPageNumberByUserIdAsync(Guid userId, int page, int pageSize)
     {
         var filterQuery = dbContext.Notes
             .AsNoTracking()
@@ -23,6 +23,26 @@ public class NoteRepository(AppDbContext dbContext) : INoteRepository
         var notesTask = filterQuery
             .OrderByDescending(n => n.TimeStamp)
             .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        
+        var totalCountTask = filterQuery
+            .CountAsync();
+        
+        await Task.WhenAll(notesTask, totalCountTask);
+        
+        return (notesTask.Result, totalCountTask.Result);
+    }
+
+    public async Task<(List<NoteEntity> notes, int totalCount)> GetPageByCursorByUserIdAsync(Guid userId, DateTime cursor, int pageSize)
+    {
+        var filterQuery = dbContext.Notes
+            .AsNoTracking()
+            .Where(n => n.UserId == userId);
+        
+        var notesTask = filterQuery
+            .OrderByDescending(n => n.TimeStamp)
+            .Where(n => n.TimeStamp < cursor)
             .Take(pageSize)
             .ToListAsync();
         

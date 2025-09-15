@@ -67,15 +67,15 @@ public class NoteService(
         //This throws EncryptionKeyMissingException
         var encryptionKeyBytes = await encryptionKeyStorageService.GetKeyOrThrowAsync();
 
-        var queryString = QueryStringHelper.ToQueryString(new PaginatedNotesRequest
+        var queryString = QueryStringHelper.ToQueryString(new PageNumberPaginationRequest
         {
             Page = page,
             PageSize = pageSize
         });
 
         var apiResponse =
-            await apiClient.HandleJsonGetWithAuthAsync<PaginatedResponse<NoteDto>>(
-                $"notes?{queryString}");
+            await apiClient.HandleJsonGetWithAuthAsync<PageNumberPaginationResponse<NoteDto>>(
+                $"notes/byPageNumber?{queryString}");
 
         return apiResponse is { IsSuccess: true, Data: not null }
             ? ServiceResult<(List<NoteModel> notes, bool hasMore)>.Success((

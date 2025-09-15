@@ -16,14 +16,24 @@ namespace EncryptedNotes.Controllers;
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 public class NotesController(INoteService noteService, IMapper mapper) : ControllerBase
 {
-    [HttpGet]
-    [ProducesResponseType<PaginatedResponse<NoteDto>>(StatusCodes.Status200OK)]
+    [HttpGet("byPageNumber")]
+    [ProducesResponseType<PageNumberPaginationResponse<NoteDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<PaginatedResponse<NoteDto>>> Get(
-        [FromQuery] [Required] PaginatedNotesRequest request)
+    public async Task<ActionResult<PageNumberPaginationResponse<NoteDto>>> Get(
+        [FromQuery] [Required] PageNumberPaginationRequest request)
     {
-        return ServiceResultMapper.ToActionResult(await noteService.GetPageForCurrentUser(request));
+        return ServiceResultMapper.ToActionResult(await noteService.GetPageByPageNumberForCurrentUser(request));
+    }
+    
+    [HttpGet("byCursor")]
+    [ProducesResponseType<CursorPaginationResponse<NoteDto>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<CursorPaginationResponse<NoteDto>>> Get(
+        [FromQuery] [Required] CursorPaginationNotesRequest request)
+    {
+        return ServiceResultMapper.ToActionResult(await noteService.GetPageByCursorForCurrentUser(request));
     }
 
     [HttpPost]

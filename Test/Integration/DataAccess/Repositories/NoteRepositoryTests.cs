@@ -66,7 +66,7 @@ public class NoteRepositoryTests
         await context.SaveChangesAsync();
         
         //Act
-        var (returnedEntityList, returnedTotalCount) = await noteRepository.GetPageByUserIdAsync(userEntity.Id, 1, 1);
+        var (returnedEntityList, returnedTotalCount) = await noteRepository.GetPageByPageNumberByUserIdAsync(userEntity.Id, 1, 1);
         
         //Assert
         returnedEntityList.Should().NotBeNull();
@@ -83,7 +83,7 @@ public class NoteRepositoryTests
         var noteRepository = new  NoteRepository(context);
         
         //Act
-        var (returnedEntityList, returnedTotalCount) = await noteRepository.GetPageByUserIdAsync(Guid.NewGuid(), 1, 1);
+        var (returnedEntityList, returnedTotalCount) = await noteRepository.GetPageByPageNumberByUserIdAsync(Guid.NewGuid(), 1, 1);
         
         //Assert
         returnedEntityList.Should().NotBeNull();

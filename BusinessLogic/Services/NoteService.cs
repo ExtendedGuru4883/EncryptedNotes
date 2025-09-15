@@ -35,19 +35,19 @@ public class NoteService(
         return ServiceResult<List<NoteDto>>.SuccessOk(mapper.Map<List<NoteDto>>(notes));
     }
 
-    public async Task<ServiceResult<PaginatedResponse<NoteDto>>> GetPageForCurrentUser(PaginatedNotesRequest request)
+    public async Task<ServiceResult<PageNumberPaginationResponse<NoteDto>>> GetPageByPageNumberForCurrentUser(PageNumberPaginationRequest request)
     {
         if (!Guid.TryParse(currentUserService.UserId, out var currentUserGuid))
         {
             logger.LogInformation(
                 "Getting paginated notes for current user failed with unauthorized: current user id missing or invalid");
-            return ServiceResult<PaginatedResponse<NoteDto>>.Failure("You need to be logged in to get notes",
+            return ServiceResult<PageNumberPaginationResponse<NoteDto>>.Failure("You need to be logged in to get notes",
                 ServiceResultErrorType.Unauthorized);
         }
 
-        var (noteEntities, totalCount) = await noteRepository.GetPageByUserIdAsync(currentUserGuid, request.Page, request.PageSize);
+        var (noteEntities, totalCount) = await noteRepository.GetPageByPageNumberByUserIdAsync(currentUserGuid, request.Page, request.PageSize);
         var noteDtos = mapper.Map<List<NoteDto>>(noteEntities);
-        var response = new PaginatedResponse<NoteDto>
+        var response = new PageNumberPaginationResponse<NoteDto>
         {
             Items = noteDtos,
             Page = request.Page,
@@ -57,7 +57,31 @@ public class NoteService(
         
 
         logger.LogInformation("Getting page {Page} of size {PageSize} for current user {UserId} succeeded", request.Page, request.PageSize, currentUserGuid);
-        return ServiceResult<PaginatedResponse<NoteDto>>.SuccessOk(response);
+        return ServiceResult<PageNumberPaginationResponse<NoteDto>>.SuccessOk(response);
+    }
+    
+    public async Task<ServiceResult<CursorPaginationResponse<NoteDto>>> GetPageByCursorForCurrentUser(CursorPaginationNotesRequest request)
+    {
+        if (!Guid.TryParse(currentUserService.UserId, out var currentUserGuid))
+        {
+            logger.LogInformation(
+                "Getting paginated notes for current user failed with unauthorized: current user id missing or invalid");
+            return ServiceResult<CursorPaginationResponse<NoteDto>>.Failure("You need to be logged in to get notes",
+                ServiceResultErrorType.Unauthorized);
+        }
+
+        var (noteEntities, totalCount) = await noteRepository.GetPageByCursorByUserIdAsync(currentUserGuid, request.DateTimeCursor, request.PageSize);
+        var noteDtos = mapper.Map<List<NoteDto>>(noteEntities);
+        var response = new CursorPaginationResponse<NoteDto>
+        {
+            Items = noteDtos,
+            PageSize = request.PageSize,
+            TotalCount = totalCount
+        };
+        
+
+        logger.LogInformation("Getting page from cursor {Cursor} of size {PageSize} for current user {UserId} succeeded", request.DateTimeCursor, request.PageSize, currentUserGuid);
+        return ServiceResult<CursorPaginationResponse<NoteDto>>.SuccessOk(response);
     }
 
     public async Task<ServiceResult<NoteDto>> AddAsyncToCurrentUser(NoteDto noteDto)

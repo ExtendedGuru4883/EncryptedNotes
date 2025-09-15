@@ -73,7 +73,7 @@ public class NoteServiceTests
     {
         //Arrange
         var currentUserId = Guid.NewGuid().ToString();
-        var paginatedNotesRequest = new PaginatedNotesRequest()
+        var paginatedNotesRequest = new PageNumberPaginationRequest()
         {
             Page = 1,
             PageSize = 10,
@@ -81,13 +81,13 @@ public class NoteServiceTests
 
         //Mock
         _mockCurrentUserService.Setup(c => c.UserId).Returns(currentUserId);
-        _mockNoteRepository.Setup(n => n.GetPageByUserIdAsync(Guid.Parse(currentUserId),
+        _mockNoteRepository.Setup(n => n.GetPageByPageNumberByUserIdAsync(Guid.Parse(currentUserId),
                 paginatedNotesRequest.Page,
                 paginatedNotesRequest.PageSize))
             .ReturnsAsync(([TestDataProvider.GetNoteEntity(Guid.Parse(currentUserId))], 1));
 
         //Act
-        var serviceResult = await _noteService.GetPageForCurrentUser(paginatedNotesRequest);
+        var serviceResult = await _noteService.GetPageByPageNumberForCurrentUser(paginatedNotesRequest);
 
         //Assert
         serviceResult.Data.Should().NotBeNull();
@@ -103,14 +103,14 @@ public class NoteServiceTests
     {
         //Mock
         _mockCurrentUserService.Setup(c => c.UserId).Returns(null as string);
-        var paginatedNotesRequest = new PaginatedNotesRequest()
+        var paginatedNotesRequest = new PageNumberPaginationRequest()
         {
             Page = 1,
             PageSize = 10,
         };
 
         //Act
-        var serviceResult = await _noteService.GetPageForCurrentUser(paginatedNotesRequest);
+        var serviceResult = await _noteService.GetPageByPageNumberForCurrentUser(paginatedNotesRequest);
 
         //Assert
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
 using Shared.Dto.Requests.Auth;
 using Shared.Dto.Responses;
+using Shared.Dto.Responses.Auth;
 
 namespace EncryptedNotes.Controllers;
 

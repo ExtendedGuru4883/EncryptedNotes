@@ -5,6 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Shared.Dto.Requests.Auth;
 using Shared.Dto.Responses;
+using Shared.Dto.Responses.Auth;
 using Shared.Enums;
 using Shared.Helpers;
 using Shared.Results;

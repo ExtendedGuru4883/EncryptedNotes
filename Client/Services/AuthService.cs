@@ -6,6 +6,7 @@ using Client.Services.Clients.Interfaces;
 using Client.Services.Interfaces;
 using Shared.Dto.Requests.Auth;
 using Shared.Dto.Responses;
+using Shared.Dto.Responses.Auth;
 
 namespace Client.Services;
 

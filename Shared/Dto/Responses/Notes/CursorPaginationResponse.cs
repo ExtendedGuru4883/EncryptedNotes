@@ -1,4 +1,4 @@
-namespace Shared.Dto.Responses;
+namespace Shared.Dto.Responses.Notes;
 
 public class CursorPaginationResponse<T>
 {

@@ -8,6 +8,7 @@ using Client.Services.Interfaces;
 using Shared.Dto;
 using Shared.Dto.Requests.Notes;
 using Shared.Dto.Responses;
+using Shared.Dto.Responses.Notes;
 
 namespace Client.Services;
 

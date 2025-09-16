@@ -3,6 +3,7 @@ using BusinessLogic.Services;
 using Core.Abstractions.BusinessLogic.Services;
 using Core.Abstractions.DataAccess.Repositories;
 using Core.Abstractions.Infrastructure;
+using EncryptedNotes.Services;
 using Test.TestHelpers;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -16,6 +17,7 @@ public class UserServiceTests
     private readonly Mock<IUserRepository> _mockUserRepository = new();
     private readonly Mock<ISignatureService> _mockSignatureHelper = new();
     private readonly Mock<ICurrentUserService> _mockCurrentUserService = new();
+    private readonly Mock<IJwtService> _mockJwtService = new();
     private readonly Mock<IMapper> _mockMapper = new();
     private readonly Mock<ILogger<UserService>> _mockLogger = new();
 
@@ -24,7 +26,7 @@ public class UserServiceTests
     public UserServiceTests()
     {
         _userService = new UserService(_mockUserRepository.Object, _mockSignatureHelper.Object,
-            _mockCurrentUserService.Object, _mockMapper.Object, _mockLogger.Object);
+            _mockCurrentUserService.Object, _mockJwtService.Object, _mockMapper.Object, _mockLogger.Object);
     }
 
     [Fact]

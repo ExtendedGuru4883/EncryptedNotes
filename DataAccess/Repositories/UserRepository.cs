@@ -19,6 +19,15 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
         return entityEntry.Entity;
     }
 
+    public async Task<bool> UpdateUsernameByIdAsync(Guid id, string newUsername)
+    {
+        var updated = await dbContext.Users
+            .Where(u => u.Id == id)
+            .ExecuteUpdateAsync(u => u.SetProperty(us => us.Username, newUsername));
+        
+        return updated > 0;
+    }
+
     public async Task<bool> UsernameExistsAsync(string username)
     {
         return await dbContext.Users

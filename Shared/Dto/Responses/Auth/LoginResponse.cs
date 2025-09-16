@@ -1,4 +1,4 @@
-namespace Shared.Dto.Responses;
+namespace Shared.Dto.Responses.Auth;
 
 public record LoginResponse
 {

@@ -1,5 +1,6 @@
 using Shared.Dto.Requests.Auth;
 using Shared.Dto.Responses;
+using Shared.Dto.Responses.Auth;
 using Shared.Results;
 
 namespace Core.Abstractions.BusinessLogic.Services;

@@ -1,6 +1,7 @@
 using Shared.Dto;
 using Shared.Dto.Requests.Notes;
 using Shared.Dto.Responses;
+using Shared.Dto.Responses.Notes;
 using Shared.Results;
 
 namespace Core.Abstractions.BusinessLogic.Services;

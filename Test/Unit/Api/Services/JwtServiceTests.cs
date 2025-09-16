@@ -47,10 +47,10 @@ public class JwtServiceTests
         var expTime = DateTimeOffset.FromUnixTimeSeconds(jwt.GetPayloadValue<long>("exp"));
 
         //Assert
-        jwt.GetPayloadValue<string>(ClaimTypes.NameIdentifier)
+        jwt.GetPayloadValue<string>(JwtRegisteredClaimNames.Sub)
             .Should().Be(userId.ToString(), "because the 'name identifier' claim should match the one passed to GenerateToken");
         
-        jwt.GetPayloadValue<string>(ClaimTypes.Name)
+        jwt.GetPayloadValue<string>(JwtRegisteredClaimNames.Name)
             .Should().Be(username, "because the 'name' claim should match the one passed to GenerateToken");
 
         jwt.GetPayloadValue<string>("aud")

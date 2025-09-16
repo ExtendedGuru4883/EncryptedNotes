@@ -3,6 +3,7 @@ using Core.Abstractions.Infrastructure;
 using EncryptedNotes.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Moq;
 
 namespace Test.Unit.Api.Services;
@@ -29,7 +30,7 @@ public class CurrentUserServiceTests
         var claims = new List<Claim>
         {
             new (ClaimTypes.NameIdentifier, userId),
-            new (ClaimTypes.Name, username),
+            new (JwtRegisteredClaimNames.Name, username),
         };
 
         //Mock

@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Text;
 using Core.Abstractions.Infrastructure;
 using EncryptedNotes.Configurations;
@@ -22,8 +21,8 @@ public class JwtService(IOptions<JwtSettings> jwtSettings) : IJwtService
         
         var claims = new Dictionary<string, object>()
         {
-            [ClaimTypes.NameIdentifier] = userId.ToString(),
-            [ClaimTypes.Name] = username,
+            [JwtRegisteredClaimNames.Sub] = userId.ToString(),
+            [JwtRegisteredClaimNames.Name] = username,
         };
 
         var descriptor = new SecurityTokenDescriptor

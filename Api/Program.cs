@@ -75,6 +75,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+//HealthCheck
+builder.Services.AddHealthChecks();
+
 //CORS configuration
 var frontendAddresses = builder.Configuration.GetSection("FrontendAddresses").Get<string[]>();
 ArgumentNullException.ThrowIfNull(frontendAddresses);
@@ -102,6 +105,7 @@ app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())

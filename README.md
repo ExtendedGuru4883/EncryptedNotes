@@ -2,6 +2,16 @@
 
 This is a secure note-taking application that demonstrates client-side, zero-knowledge encryption of user content using .NET and Blazor. All notes are encrypted before leaving your device, and the system is designed so that the server never has access to any password or decrypted data.
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Try_Now-green?style=for-the-badge)](https://encryptednotes-5dfo.onrender.com/)
+> [!WARNING]
+> **Cold Start Notice:** The API is hosted on a free-tier cloud service. If the system has been inactive, the **very first interaction (e.g. signing in) may take longer to complete** as it needs to wake the server up. All subsequent requests will behave normally.
+
+---
+
+<div align='center'>
+<img width="1600" height="878" alt="demo" src="https://github.com/user-attachments/assets/b300c3d1-98e3-474a-a98d-042aa69a91a9" />
+</div>
+
 ---
 
 ## Purpose

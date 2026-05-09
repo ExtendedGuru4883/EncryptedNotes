@@ -1,6 +1,7 @@
 using Core.Entities;
 using Shared.Dto;
 using Shared.Dto.Requests.Auth;
+using Shared.Dto.Requests.User;
 using Shared.Dto.Responses;
 
 namespace Test.TestHelpers;
@@ -84,6 +85,17 @@ public static class TestDataProvider
             Username = "username",
             NonceBase64 = GetValidBase64Value(),
             NonceSignatureBase64 = GetValidBase64Value()
+        };
+    }
+
+    public static UpdatePasswordRequest GetValidUpdatePasswordRequest()
+    {
+        return new UpdatePasswordRequest()
+        {
+            NewEncryptedEncryptionKeyBase64 = GetValidBase64Value(),
+            NewEncryptionSaltBase64 = GetValidBase64Value(),
+            NewPublicKeyBase64 = GetValidBase64Value(),
+            NewSignatureSaltBase64 = GetValidBase64Value()
         };
     }
 }

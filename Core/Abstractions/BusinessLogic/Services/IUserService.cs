@@ -9,5 +9,6 @@ public interface IUserService
 {
     Task<ServiceResult<UserDto>> AddAsync(UserDto userDto);
     Task<ServiceResult<UpdateUsernameResponse>> UpdateUsernameForCurrentUserAsync(UpdateUsernameRequest request);
+    Task<ServiceResult> UpdatePasswordForCurrentUserAsync(UpdatePasswordRequest request);
     Task<ServiceResult> DeleteCurrentAsync();
 }

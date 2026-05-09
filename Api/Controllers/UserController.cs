@@ -34,4 +34,14 @@ public class UserController(IUserService userService) : ControllerBase
     {
         return ServiceResultMapper.ToActionResult(await userService.UpdateUsernameForCurrentUserAsync(request));
     }
+
+    [HttpPut("password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ErrorResponseDto>(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
+    {
+        return ServiceResultMapper.ToActionResult(await userService.UpdatePasswordForCurrentUserAsync(request));
+    }
 }

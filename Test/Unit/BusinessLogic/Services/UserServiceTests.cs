@@ -3,7 +3,6 @@ using BusinessLogic.Services;
 using Core.Abstractions.BusinessLogic.Services;
 using Core.Abstractions.DataAccess.Repositories;
 using Core.Abstractions.Infrastructure;
-using EncryptedNotes.Services;
 using Test.TestHelpers;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -98,7 +97,7 @@ public class UserServiceTests
         //Assert
         CommonAssertions.AssertServiceResultSuccessNoContent(serviceResult);
     }
-    
+
     [Fact]
     public async Task DeleteCurrentUserAsync_AuthAndNotDeleted_ReturnsFailureNotFound()
     {
@@ -114,7 +113,7 @@ public class UserServiceTests
         //Assert
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.NotFound);
     }
-    
+
     [Fact]
     public async Task DeleteCurrentUserAsync_NotAuth_ReturnsFailureUnauthorized()
     {
@@ -127,5 +126,89 @@ public class UserServiceTests
         //Assert
         _mockUserRepository.Verify(c => c.DeleteByIdAsync(It.IsAny<Guid>()), Times.Never);
         CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
+    }
+
+    [Fact]
+    public async Task UpdatePasswordForCurrentUserAsync_AuthAndValidPublicKey_ReturnsSuccessNoContent()
+    {
+        //Arrange
+        var updatePasswordRequest = TestDataProvider.GetValidUpdatePasswordRequest();
+
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(Guid.NewGuid().ToString);
+        _mockCurrentUserService.Setup(c => c.Username).Returns("test-username");
+        _mockSignatureHelper.Setup(s => s.PublicKeyBase64Length)
+            .Returns(updatePasswordRequest.NewPublicKeyBase64.Length);
+        _mockUserRepository.Setup(u => u.UpdatePasswordByIdAsync(It.IsAny<Guid>(), It.IsAny<string>(),
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(true);
+
+        //Act
+        var serviceResult = await _userService.UpdatePasswordForCurrentUserAsync(updatePasswordRequest);
+
+        //Assert
+        CommonAssertions.AssertServiceResultSuccessNoContent(serviceResult);
+    }
+
+    [Fact]
+    public async Task UpdatePasswordForCurrentUserAsync_AuthAndInvalidPublicKeyLength_ReturnsFailureBadRequest()
+    {
+        //Arrange
+        var updatePasswordRequest = TestDataProvider.GetValidUpdatePasswordRequest();
+
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(Guid.NewGuid().ToString);
+        _mockCurrentUserService.Setup(c => c.Username).Returns("test-username");
+        _mockSignatureHelper.Setup(s => s.PublicKeyBase64Length)
+            .Returns(updatePasswordRequest.NewPublicKeyBase64.Length + 1);
+
+        //Act
+        var serviceResult = await _userService.UpdatePasswordForCurrentUserAsync(updatePasswordRequest);
+
+        //Assert
+        _mockUserRepository.Verify(u => u.UpdatePasswordByIdAsync(It.IsAny<Guid>(), It.IsAny<string>(),
+            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.BadRequest);
+    }
+    
+    [Fact]
+    public async Task UpdatePasswordForCurrentUserAsync_NotAuth_ReturnsFailureUnauthorized()
+    {
+        //Arrange
+        var updatePasswordRequest = TestDataProvider.GetValidUpdatePasswordRequest();
+
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(null as string);
+
+        //Act
+        var serviceResult = await _userService.UpdatePasswordForCurrentUserAsync(updatePasswordRequest);
+
+        //Assert
+        _mockUserRepository.Verify(u => u.UpdatePasswordByIdAsync(It.IsAny<Guid>(), It.IsAny<string>(),
+            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.Unauthorized);
+    }
+    
+    [Fact]
+    public async Task UpdatePasswordForCurrentUserAsync_AuthAndValidKeyAndNotDeleted_ReturnsFailureNotFound()
+    {
+        //This can happen if the user has been deleted and an update password request is received with the old still valid token
+        //Arrange
+        var updatePasswordRequest = TestDataProvider.GetValidUpdatePasswordRequest();
+
+        //Mock
+        _mockCurrentUserService.Setup(c => c.UserId).Returns(Guid.NewGuid().ToString);
+        _mockCurrentUserService.Setup(c => c.Username).Returns("test-username");
+        _mockSignatureHelper.Setup(s => s.PublicKeyBase64Length)
+            .Returns(updatePasswordRequest.NewPublicKeyBase64.Length);
+        _mockUserRepository.Setup(u => u.UpdatePasswordByIdAsync(It.IsAny<Guid>(), It.IsAny<string>(),
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(false);
+
+        //Act
+        var serviceResult = await _userService.UpdatePasswordForCurrentUserAsync(updatePasswordRequest);
+
+        //Assert
+        CommonAssertions.AssertServiceResultFailure(serviceResult, ServiceResultErrorType.NotFound);
     }
 }

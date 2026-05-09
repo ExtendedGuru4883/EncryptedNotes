@@ -44,7 +44,8 @@ public class UserService(
         return ServiceResult<UserDto>.SuccessCreated(userDto);
     }
 
-    public async Task<ServiceResult<UpdateUsernameResponse>> UpdateUsernameForCurrentUserAsync(UpdateUsernameRequest request)
+    public async Task<ServiceResult<UpdateUsernameResponse>> UpdateUsernameForCurrentUserAsync(
+        UpdateUsernameRequest request)
     {
         if (!Guid.TryParse(currentUserService.UserId, out var currentUserGuid))
         {
@@ -53,15 +54,17 @@ public class UserService(
             return ServiceResult<UpdateUsernameResponse>.Failure("You need to be logged in to update your username",
                 ServiceResultErrorType.Unauthorized);
         }
-        
+
         if (await userRepository.UsernameExistsAsync(request.NewUsername))
         {
-            logger.LogInformation("Updating username for current user {UserId} failed  with conflict: requested username already exists",
+            logger.LogInformation(
+                "Updating username for current user {UserId} failed  with conflict: requested username already exists",
                 currentUserGuid);
-            return ServiceResult<UpdateUsernameResponse>.Failure("Username already exists", ServiceResultErrorType.Conflict);
+            return ServiceResult<UpdateUsernameResponse>.Failure("Username already exists",
+                ServiceResultErrorType.Conflict);
         }
 
-        if (!(await userRepository.UpdateUsernameByIdAsync(currentUserGuid, request.NewUsername)))
+        if (!await userRepository.UpdateUsernameByIdAsync(currentUserGuid, request.NewUsername))
         {
             logger.LogInformation(
                 "Updating username for current user {UserId} failed with not found: repository update returned false, user probably" +
@@ -69,15 +72,50 @@ public class UserService(
             return ServiceResult<UpdateUsernameResponse>.Failure("User not found",
                 ServiceResultErrorType.NotFound);
         }
-        
+
         logger.LogInformation("Updating username for current user {UserId} succeeded", currentUserGuid);
 
         var response = new UpdateUsernameResponse()
         {
             Token = jwtService.GenerateToken(request.NewUsername, currentUserGuid),
         };
-        
+
         return ServiceResult<UpdateUsernameResponse>.SuccessOk(response);
+    }
+
+    public async Task<ServiceResult> UpdatePasswordForCurrentUserAsync(UpdatePasswordRequest request)
+    {
+        if (!Guid.TryParse(currentUserService.UserId, out var currentUserGuid) || currentUserService.Username is null)
+        {
+            logger.LogInformation(
+                "Updating password for current user failed with unauthorized: current user id or username missing or invalid");
+            return ServiceResult.Failure("You need to be logged in to update your password",
+                ServiceResultErrorType.Unauthorized);
+        }
+
+        if (request.NewPublicKeyBase64.Length != signatureService.PublicKeyBase64Length)
+        {
+            logger.LogInformation(
+                "Updating password for current user {UserId} failed with bad request: invalid public key size",
+                currentUserGuid);
+            return ServiceResult.Failure(
+                $"Invalid public key size. Base64 key size must be {signatureService.PublicKeyBase64Length} characters",
+                ServiceResultErrorType.BadRequest);
+        }
+
+        if (!await userRepository.UpdatePasswordByIdAsync(currentUserGuid, request.NewSignatureSaltBase64,
+                request.NewEncryptionSaltBase64, request.NewPublicKeyBase64, request.NewEncryptedEncryptionKeyBase64))
+        {
+            logger.LogInformation(
+                "Updating password for current user {UserId} failed with not found: repository update returned false, user probably" +
+                " doesn't exist", currentUserGuid);
+            return ServiceResult.Failure("User not found",
+                ServiceResultErrorType.NotFound);
+        }
+
+        logger.LogInformation("Updating password for current user {UserId} succeeded", currentUserGuid);
+
+        return ServiceResult.SuccessNoContent();
     }
 
     public async Task<ServiceResult> DeleteCurrentAsync()

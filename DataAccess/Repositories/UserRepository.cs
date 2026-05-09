@@ -24,7 +24,22 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
         var updated = await dbContext.Users
             .Where(u => u.Id == id)
             .ExecuteUpdateAsync(u => u.SetProperty(us => us.Username, newUsername));
-        
+
+        return updated > 0;
+    }
+
+    public async Task<bool> UpdatePasswordByIdAsync(Guid id, string newSignatureSaltBase64,
+        string newEncryptionSaltBase64,
+        string newPublicKeyBase64, string newEncryptedEncryptionKeyBase64)
+    {
+        var updated = await dbContext.Users
+            .Where(u => u.Id == id)
+            .ExecuteUpdateAsync(u => u
+                .SetProperty(us => us.SignatureSaltBase64, newSignatureSaltBase64)
+                .SetProperty(us => us.EncryptionSaltBase64, newEncryptionSaltBase64)
+                .SetProperty(us => us.PublicKeyBase64, newPublicKeyBase64)
+                .SetProperty(us => us.EncryptedEncryptionKeyBase64, newEncryptedEncryptionKeyBase64));
+
         return updated > 0;
     }
 

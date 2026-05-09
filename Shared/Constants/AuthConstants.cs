@@ -7,4 +7,5 @@ public class AuthConstants
     public const int PublicKeyBase64MaxLength = 256;
     public const int NonceSignatureBase64MaxLength = 256;
     public const int NonceBase64MaxLength = 256;
+    public const int EncryptedEncryptionKeyBase64Maxlength = 256;
 }

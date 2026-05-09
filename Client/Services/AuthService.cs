@@ -52,9 +52,11 @@ public class AuthService(
         await sessionStorageService.SetItemAsStringAsync("token",
             apiLoginResponse.Data.Token);
 
-        var encryptionKeyBytes = cryptoService.DeriveEncryptionKey(
-            passwordBytes,
-            Convert.FromBase64String(apiLoginResponse.Data.EncryptionSaltBase64));
+        var encryptionKeyBytes = cryptoService.Decrypt(
+            Convert.FromBase64String(apiLoginResponse.Data.EncryptedEncryptionKeyBase64),
+            cryptoService.DeriveEncryptionKey(
+                passwordBytes,
+                Convert.FromBase64String(apiLoginResponse.Data.EncryptionSaltBase64)));
         var encryptionKeyBase64 = Convert.ToBase64String(encryptionKeyBytes);
 
         await sessionStorageService.SetItemAsStringAsync("encryptionKeyBase64", encryptionKeyBase64);
@@ -76,13 +78,16 @@ public class AuthService(
         var signatureSaltBytes = cryptoService.GenerateSalt();
         var encryptionSaltBytes = cryptoService.GenerateSalt();
         var keyPairBytes = signatureService.GenerateKeyPair(passwordBytes, signatureSaltBytes);
+        var encryptedEncryptionKeyBytes = cryptoService.Encrypt(cryptoService.GenerateRandomEncryptionKey(),
+            cryptoService.DeriveEncryptionKey(passwordBytes, encryptionSaltBytes));
 
         return new SignupRequest()
         {
             Username = username,
             SignatureSaltBase64 = Convert.ToBase64String(signatureSaltBytes),
             EncryptionSaltBase64 = Convert.ToBase64String(encryptionSaltBytes),
-            PublicKeyBase64 = Convert.ToBase64String(keyPairBytes.PublicKey)
+            PublicKeyBase64 = Convert.ToBase64String(keyPairBytes.PublicKey),
+            EncryptedEncryptionKeyBase64 = Convert.ToBase64String(encryptedEncryptionKeyBytes)
         };
     }
 

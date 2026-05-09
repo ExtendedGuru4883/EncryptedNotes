@@ -13,6 +13,8 @@ public record UserEntity : BaseEntity
     public required string EncryptionSaltBase64 { get; set; }
     [Required]
     public required string PublicKeyBase64 { get; set; }
+    [Required]
+    public required string EncryptedEncryptionKeyBase64 { get; set; }
 
     //Navigation properties
     public IEnumerable<NoteEntity> Notes { get; set; } = new List<NoteEntity>();

@@ -18,6 +18,11 @@ public class CryptoService : ICryptoService
             PasswordHash.ALG_ARGON2ID13);
     }
 
+    public byte[] GenerateRandomEncryptionKey()
+    {
+        return SecretBox.Crypto_SecretBox_KeyGen();
+    }
+
     public byte[] GenerateSalt()
     {
         return RandomBytes.RandomBytes_Buf(PasswordHash.SALT_BYTES);

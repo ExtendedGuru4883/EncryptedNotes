@@ -21,4 +21,8 @@ public record SignupRequest : BaseAuthRequest
     [ValidBase64]
     [CustomStringLength(AuthConstants.PublicKeyBase64MaxLength, 1)]
     public required string PublicKeyBase64 { get; init; }
+    [Required]
+    [ValidBase64]
+    [CustomStringLength(AuthConstants.EncryptedEncryptionKeyBase64Maxlength, 1)]
+    public required string EncryptedEncryptionKeyBase64 { get; init; }
 }

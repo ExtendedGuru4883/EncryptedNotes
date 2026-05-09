@@ -107,6 +107,7 @@ public class AuthService(
         {
             Token = jwtService.GenerateToken(userEntity.Username, userEntity.Id),
             EncryptionSaltBase64 = userEntity.EncryptionSaltBase64,
+            EncryptedEncryptionKeyBase64 = userEntity.EncryptedEncryptionKeyBase64
         };
         logger.LogInformation("Login for user {username} succeeded. JWT generated",
             SanitizeForLogging.Sanitize(loginRequest.Username));

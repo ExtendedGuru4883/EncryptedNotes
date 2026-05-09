@@ -11,14 +11,14 @@ public static class TestDataProvider
     {
         return "MTIzNDU2Nzg5MGFiY2RlZg==";
     }
-    
+
     public static string GetRandomValidBase64(int length = 16)
     {
         var randomBytes = new byte[length];
         var random = new Random();
-        
+
         random.NextBytes(randomBytes);
-        
+
         return Convert.ToBase64String(randomBytes);
     }
 
@@ -34,7 +34,8 @@ public static class TestDataProvider
             Username = "test-username",
             SignatureSaltBase64 = GetValidBase64Value(),
             EncryptionSaltBase64 = GetValidBase64Value(),
-            PublicKeyBase64 = GetValidBase64Value()
+            PublicKeyBase64 = GetValidBase64Value(),
+            EncryptedEncryptionKeyBase64 = GetValidBase64Value(),
         };
     }
 
@@ -46,10 +47,11 @@ public static class TestDataProvider
             Username = "test-username",
             SignatureSaltBase64 = GetValidBase64Value(),
             EncryptionSaltBase64 = GetValidBase64Value(),
-            PublicKeyBase64 = GetValidBase64Value()
+            PublicKeyBase64 = GetValidBase64Value(),
+            EncryptedEncryptionKeyBase64 = GetValidBase64Value(),
         };
     }
-    
+
     public static NoteDto GetNoteDto(Guid userId)
     {
         return new NoteDto
@@ -58,7 +60,7 @@ public static class TestDataProvider
             EncryptedContentBase64 = GetValidBase64Value(),
         };
     }
-    
+
     public static NoteEntity GetNoteEntity(Guid userId)
     {
         return new NoteEntity
@@ -67,7 +69,6 @@ public static class TestDataProvider
             EncryptedTitleBase64 = GetValidBase64Value(),
             EncryptedContentBase64 = GetValidBase64Value(),
             UserId = userId,
-
         };
     }
 
